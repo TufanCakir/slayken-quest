@@ -1,0 +1,62 @@
+[
+  {
+    "id": "player_001",
+    "name": "Hero",
+    "class": "Berserker",
+    "level": 1,
+    "xp": 0,
+    "xpToNextLevel": 100,
+    "gold": 0,
+    "hp": { "current": 100, "max": 100 }
+  },
+  {
+    "id": "player_002",
+    "name": "Knight",
+    "class": "Paladin",
+    "level": 5,
+    "xp": 20,
+    "xpToNextLevel": 200,
+    "gold": 50,
+    "hp": { "current": 180, "max": 200 }
+  },
+  {
+    "id": "player_003",
+    "name": "Rogue",
+    "class": "Assassin",
+    "level": 3,
+    "xp": 50,
+    "xpToNextLevel": 150,
+    "gold": 30,
+    "hp": { "current": 120, "max": 130 }
+  },
+  {
+    "id": "player_004",
+    "name": "Arwen",
+    "class": "Mage",
+    "level": 4,
+    "xp": 80,
+    "xpToNextLevel": 160,
+    "gold": 40,
+    "hp": { "current": 90, "max": 90 }
+  },
+  {
+    "id": "player_005",
+    "name": "Thalor",
+    "class": "Ranger",
+    "level": 2,
+    "xp": 30,
+    "xpToNextLevel": 120,
+    "gold": 20,
+    "hp": { "current": 110, "max": 110 }
+  },
+  {
+    "id": "player_006",
+    "name": "Morgath",
+    "class": "Necromancer",
+    "level": 6,
+    "xp": 200,
+    "xpToNextLevel": 300,
+    "gold": 100,
+    "hp": { "current": 140, "max": 140 }
+  }
+]

@@ -1,0 +1,98 @@
+[
+  {
+    "id": "forest_day",
+    "skyGradient": {
+      "start": "#66ccff",
+      "end": "#0066cc"
+    },
+    "groundGradient": {
+      "start": "#228B22",
+      "end": "#013220"
+    },
+    "gridColor": "#88ff88"
+  },
+  {
+    "id": "forest_night",
+    "skyGradient": {
+      "start": "#0a0f2d",
+      "end": "#14192e"
+    },
+    "groundGradient": {
+      "start": "#003300",
+      "end": "#001100"
+    },
+    "gridColor": "#44ff44"
+  },
+  {
+    "id": "desert_day",
+    "skyGradient": {
+      "start": "#ffcc66",
+      "end": "#ff9966"
+    },
+    "groundGradient": {
+      "start": "#d2b48c",
+      "end": "#a0522d"
+    },
+    "gridColor": "#ffaa44"
+  },
+  {
+    "id": "desert_night",
+    "skyGradient": {
+      "start": "#332211",
+      "end": "#110800"
+    },
+    "groundGradient": {
+      "start": "#7a5c3e",
+      "end": "#3e2a1a"
+    },
+    "gridColor": "#cc8844"
+  },
+  {
+    "id": "volcano",
+    "skyGradient": {
+      "start": "#330000",
+      "end": "#660000"
+    },
+    "groundGradient": {
+      "start": "#4b0000",
+      "end": "#1a0000"
+    },
+    "gridColor": "#ff3333"
+  },
+  {
+    "id": "fire_land",
+    "skyGradient": {
+      "start": "#ff5500",
+      "end": "#992200"
+    },
+    "groundGradient": {
+      "start": "#aa2200",
+      "end": "#550000"
+    },
+    "gridColor": "#ff8844"
+  },
+  {
+    "id": "ice_land",
+    "skyGradient": {
+      "start": "#ccf2ff",
+      "end": "#66b3ff"
+    },
+    "groundGradient": {
+      "start": "#99ccff",
+      "end": "#336699"
+    },
+    "gridColor": "#88ddff"
+  },
+  {
+    "id": "mountains",
+    "skyGradient": {
+      "start": "#99ccff",
+      "end": "#336699"
+    },
+    "groundGradient": {
+      "start": "#555555",
+      "end": "#222222"
+    },
+    "gridColor": "#cccccc"
+  }
+]
