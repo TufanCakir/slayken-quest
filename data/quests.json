@@ -1,0 +1,22 @@
+[
+  {
+    "id": "quest-1",
+    "title": "Besiege 5 Gegner",
+    "description": "Gewinne 5 Kämpfe, um eine Belohnung zu erhalten.",
+    "progress": 0,
+    "goal": 5,
+    "reward": { "coins": 50, "xp": 100 },
+    "completed": false,
+    "claimed": false
+  },
+  {
+    "id": "quest-2",
+    "title": "Sammle 100 Gold",
+    "description": "Verdiene insgesamt 100 Gold in Kämpfen.",
+    "progress": 0,
+    "goal": 100,
+    "reward": { "crystals": 5 },
+    "completed": false,
+    "claimed": false
+  }
+]

@@ -7,13 +7,14 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  FlatList,
   Alert,
 } from "react-native";
 import Player from "../components/Player";
 import playersData from "../data/players.json";
 import { usePlayers } from "../context/PlayerContext";
 
-// 🎨 Klassen-Farbsets
+// 🎨 Farbsets
 import berserkerColors from "../data/berserkerColors";
 import demonHunterColors from "../data/demonHunterColors";
 import paladinColors from "../data/paladinColors";
@@ -23,7 +24,7 @@ import necromancerColors from "../data/necromancerColors";
 import rangerColors from "../data/rangerColors";
 import deathKnightColors from "../data/deathKnightColors";
 
-// Mapping → Klasse → Farbset
+// 🔑 Mapping → Klasse → Farbset
 const CLASS_COLORS = {
   Berserker: berserkerColors,
   DemonHunter: demonHunterColors,
@@ -35,11 +36,11 @@ const CLASS_COLORS = {
   Ranger: rangerColors,
 };
 
-// 🔑 Hilfsfunktionen
+// 🔑 Utils
 const randomOf = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const uniq = (arr) => [...new Set(arr)].filter(Boolean);
 
-const randomNames = [
+const RANDOM_NAMES = [
   "Thorgar",
   "Elyra",
   "Varok",
@@ -53,7 +54,11 @@ const randomNames = [
 ];
 
 // 🔧 Farb-Swatch
-function ColorSwatch({ color, selected, onPress }) {
+const ColorSwatch = React.memo(function ColorSwatch({
+  color,
+  selected,
+  onPress,
+}) {
   const [bg, border] = Array.isArray(color)
     ? [color[0], color[color.length - 1]]
     : [color, "#444"];
@@ -68,6 +73,59 @@ function ColorSwatch({ color, selected, onPress }) {
       ]}
     />
   );
+});
+
+// 🔧 Accordion-Section
+const ColorSection = React.memo(function ColorSection({
+  label,
+  colors,
+  selected,
+  onSelect,
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <View style={styles.section}>
+      <TouchableOpacity
+        onPress={() => setOpen((o) => !o)}
+        style={styles.sectionHeader}
+      >
+        <Text style={styles.sectionTitle}>{label}</Text>
+        <Text style={styles.sectionToggle}>{open ? "▲" : "▼"}</Text>
+      </TouchableOpacity>
+
+      {open && (
+        <FlatList
+          data={colors}
+          keyExtractor={(_, idx) => `${label}-${idx}`}
+          numColumns={8}
+          scrollEnabled={false}
+          contentContainerStyle={styles.colorGrid}
+          renderItem={({ item }) => (
+            <ColorSwatch
+              color={item}
+              selected={selected === item}
+              onPress={() => onSelect(item)}
+            />
+          )}
+        />
+      )}
+    </View>
+  );
+});
+
+// 🔧 Klassen-Button
+function ClassButton({ cls, active, onPress }) {
+  return (
+    <TouchableOpacity
+      style={[styles.classBtn, active && styles.classBtnActive]}
+      onPress={onPress}
+    >
+      <Text style={[styles.classBtnText, active && styles.classBtnTextActive]}>
+        {cls}
+      </Text>
+    </TouchableOpacity>
+  );
 }
 
 export default function CreateCharacterScreen({ navigation }) {
@@ -77,7 +135,7 @@ export default function CreateCharacterScreen({ navigation }) {
   const [name, setName] = useState("");
   const [selectedClass, setSelectedClass] = useState(allClasses[0]);
 
-  // 🎨 Default-Sprite nach Klasse
+  // Defaults für Sprite
   const buildSpriteDefaults = useCallback((cls) => {
     const base = CLASS_COLORS[cls] || {};
     return Object.fromEntries(
@@ -89,7 +147,6 @@ export default function CreateCharacterScreen({ navigation }) {
     buildSpriteDefaults(selectedClass)
   );
 
-  // Klasse wechseln
   const handleClassChange = (cls) => {
     setSelectedClass(cls);
     setSprite(buildSpriteDefaults(cls));
@@ -108,10 +165,10 @@ export default function CreateCharacterScreen({ navigation }) {
 
     setSelectedClass(cls);
     setSprite(randomSprite);
-    setName(randomOf(randomNames));
+    setName(randomOf(RANDOM_NAMES));
   };
 
-  // Verfügbare Farben für aktuelle Klasse
+  // Verfügbare Farben
   const availableColors = useMemo(() => {
     const base = CLASS_COLORS[selectedClass] || {};
     return Object.fromEntries(
@@ -119,7 +176,10 @@ export default function CreateCharacterScreen({ navigation }) {
     );
   }, [selectedClass]);
 
-  const updateSprite = (k, v) => setSprite((prev) => ({ ...prev, [k]: v }));
+  const updateSprite = useCallback(
+    (k, v) => setSprite((prev) => ({ ...prev, [k]: v })),
+    []
+  );
 
   // ✅ Speichern
   const handleSave = async () => {
@@ -162,7 +222,7 @@ export default function CreateCharacterScreen({ navigation }) {
     >
       <Text style={styles.title}>Neuen Charakter erstellen</Text>
 
-      {/* 🎲 Zufälliger Button */}
+      {/* 🎲 Zufällig */}
       <TouchableOpacity style={styles.randomBtn} onPress={handleRandomize}>
         <Text style={styles.randomText}>🎲 Zufälliger Charakter</Text>
       </TouchableOpacity>
@@ -187,43 +247,26 @@ export default function CreateCharacterScreen({ navigation }) {
       {/* Klassen-Auswahl */}
       <Text style={styles.label}>Klasse:</Text>
       <View style={styles.classList}>
-        {allClasses.map((cls) => {
-          const active = selectedClass === cls;
-          return (
-            <TouchableOpacity
-              key={cls}
-              style={[styles.classBtn, active && styles.classBtnActive]}
-              onPress={() => handleClassChange(cls)}
-            >
-              <Text
-                style={[
-                  styles.classBtnText,
-                  active && styles.classBtnTextActive,
-                ]}
-              >
-                {cls}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
+        {allClasses.map((cls) => (
+          <ClassButton
+            key={cls}
+            cls={cls}
+            active={selectedClass === cls}
+            onPress={() => handleClassChange(cls)}
+          />
+        ))}
       </View>
 
       {/* Farbauswahl */}
       {Object.entries(availableColors).map(([key, colors]) =>
         colors?.length ? (
-          <View key={key} style={{ marginTop: 12 }}>
-            <Text style={styles.label}>{key}:</Text>
-            <View style={styles.colorRow}>
-              {colors.map((color, idx) => (
-                <ColorSwatch
-                  key={`${key}-${idx}`}
-                  color={color}
-                  selected={sprite[key] === color}
-                  onPress={() => updateSprite(key, color)}
-                />
-              ))}
-            </View>
-          </View>
+          <ColorSection
+            key={key}
+            label={key}
+            colors={colors}
+            selected={sprite[key]}
+            onSelect={(c) => updateSprite(key, c)}
+          />
         ) : null
       )}
 
@@ -247,6 +290,23 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   label: { color: "#fff", marginTop: 16, marginBottom: 6, fontSize: 16 },
+
+  // Accordion
+  section: { marginTop: 12 },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    backgroundColor: "#1a1d2e",
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: "#272b45",
+  },
+  sectionTitle: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  sectionToggle: { color: "#aaa", fontSize: 14 },
+
   input: {
     backgroundColor: "#1a1d2e",
     color: "#fff",
@@ -269,7 +329,8 @@ const styles = StyleSheet.create({
   classBtnActive: { backgroundColor: "#FFD700", borderColor: "#FFD700" },
   classBtnText: { color: "#fff", fontWeight: "600" },
   classBtnTextActive: { color: "#222" },
-  colorRow: { flexDirection: "row", flexWrap: "wrap", marginTop: 8 },
+
+  colorGrid: { marginTop: 8, justifyContent: "flex-start" },
   colorBox: {
     width: 32,
     height: 32,
@@ -284,6 +345,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.9,
     shadowRadius: 6,
   },
+
   saveBtn: {
     backgroundColor: "#4CAF50",
     paddingVertical: 12,
