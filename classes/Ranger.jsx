@@ -10,9 +10,10 @@ import {
   LinearGradient,
   Stop,
 } from "react-native-svg";
+import defaultColors from "../data/rangerColors"; // 🎨 externe Farb-Defaults
 
 // 🔧 Gradient-Helfer
-function makeGradient(id, colors, { x2 = "0", y2 = "1" } = {}) {
+function makeGradient(id, colors, { x2 = "0", y2 = "1", opacity = 1 } = {}) {
   const stops = Array.isArray(colors) ? colors : [colors];
   const count = Math.max(stops.length - 1, 1);
   return (
@@ -22,6 +23,7 @@ function makeGradient(id, colors, { x2 = "0", y2 = "1" } = {}) {
           key={`${id}-${i}`}
           offset={`${(i / count) * 100}%`}
           stopColor={c}
+          stopOpacity={opacity}
         />
       ))}
     </LinearGradient>
@@ -29,20 +31,29 @@ function makeGradient(id, colors, { x2 = "0", y2 = "1" } = {}) {
 }
 
 // 🏹 Bogen
-function RangerBow({ bowId, stringId }) {
+function RangerBow({ bowId, stringId, outline }) {
   return (
     <G transform="translate(96,88)">
+      {/* Bogenkörper */}
       <Path
-        d="M0 -20 Q20 0 0 20"
+        d="M0 -22 Q20 0 0 22"
         stroke={`url(#${bowId})`}
         strokeWidth={4}
         fill="none"
       />
+      {/* Outline für Kontrast */}
+      <Path
+        d="M0 -22 Q20 0 0 22"
+        stroke={outline}
+        strokeWidth={1}
+        fill="none"
+      />
+      {/* Bogensehne */}
       <Line
         x1={0}
-        y1={-20}
+        y1={-22}
         x2={0}
-        y2={20}
+        y2={22}
         stroke={`url(#${stringId})`}
         strokeWidth={1.5}
       />
@@ -53,44 +64,52 @@ function RangerBow({ bowId, stringId }) {
 // 🎒 Köcher + Pfeil
 function RangerQuiver({ quiverId, arrowShaftId, arrowHeadId, outline }) {
   return (
-    <G transform="translate(40,70)">
+    <G transform="translate(42,70)">
+      {/* Köcher */}
       <Rect
         x={-4}
         y={0}
         width={8}
-        height={20}
+        height={22}
+        rx={2}
         fill={`url(#${quiverId})`}
         stroke={outline}
-        strokeWidth={2}
+        strokeWidth={1.5}
       />
-      {/* Pfeil */}
+      {/* Pfeilschaft */}
       <Line
         x1={0}
         y1={0}
         x2={0}
-        y2={-10}
+        y2={-12}
         stroke={`url(#${arrowShaftId})`}
         strokeWidth={2}
       />
-      <Path d="M-4 -10 L0 -18 L4 -10 Z" fill={`url(#${arrowHeadId})`} />
+      {/* Pfeilspitze */}
+      <Path
+        d="M-4 -12 L0 -20 L4 -12 Z"
+        fill={`url(#${arrowHeadId})`}
+        stroke={outline}
+        strokeWidth={0.8}
+      />
     </G>
   );
 }
 
 export default function Ranger({
   // === Farben ===
-  skin = "#FFCCBC",
-  outlineColor = "#202020",
+  skin = defaultColors.skin,
+  outlineColor = defaultColors.outline,
 
-  armorColors = ["#795548", "#5D4037"],
-  strapColors = ["#4E342E", "#3E2723"],
+  armorColors = defaultColors.armor,
+  strapColors = defaultColors.strap,
 
-  bowColors = ["#3E2723", "#1B0000"],
-  stringColors = "#FFF",
+  bowColors = defaultColors.bow,
+  stringColors = defaultColors.string,
 
-  quiverColors = ["#3E2723", "#1B1B1B"],
-  arrowShaftColors = "#FFF",
-  arrowHeadColors = ["#FFF", "#CCC"],
+  quiverColors = defaultColors.quiver,
+  arrowShaftColors = defaultColors.arrowShaft,
+  arrowHeadColors = defaultColors.arrowHead,
 
   strokeWidth = 2,
 }) {
@@ -106,7 +125,7 @@ export default function Ranger({
         {makeGradient("ranger-arrow-head", arrowHeadColors)}
       </Defs>
 
-      {/* Rüstung */}
+      {/* Brustpanzer */}
       <Rect
         x={50}
         y={72}
@@ -136,31 +155,38 @@ export default function Ranger({
         strokeWidth={strokeWidth + 1}
         strokeLinecap="round"
       />
+      <Path
+        d="M50 72 Q60 60 70 72 Q80 60 90 72"
+        fill="none"
+        stroke={outlineColor}
+        strokeWidth={1}
+        opacity={0.4}
+      />
 
       {/* Arme */}
-      <Rect
-        x={42}
-        y={74}
-        width={8}
-        height={18}
-        rx={3}
-        fill={skin}
-        stroke={outlineColor}
-        strokeWidth={strokeWidth}
-      />
-      <Rect
-        x={90}
-        y={74}
-        width={8}
-        height={18}
-        rx={3}
-        fill={skin}
-        stroke={outlineColor}
-        strokeWidth={strokeWidth}
-      />
+      {[
+        { x: 42, y: 74 },
+        { x: 90, y: 74 },
+      ].map((pos, i) => (
+        <Rect
+          key={`arm-${i}`}
+          x={pos.x}
+          y={pos.y}
+          width={8}
+          height={18}
+          rx={3}
+          fill={skin}
+          stroke={outlineColor}
+          strokeWidth={strokeWidth}
+        />
+      ))}
 
       {/* Bogen */}
-      <RangerBow bowId="ranger-bow" stringId="ranger-string" />
+      <RangerBow
+        bowId="ranger-bow"
+        stringId="ranger-string"
+        outline={outlineColor}
+      />
 
       {/* Köcher + Pfeil */}
       <RangerQuiver

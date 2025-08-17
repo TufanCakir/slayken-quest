@@ -9,6 +9,7 @@ import {
   LinearGradient,
   Stop,
 } from "react-native-svg";
+import defaultColors from "../data/necromancerColors"; // 🎨 externe Farb-Defaults
 
 // 🔧 Gradient-Helfer
 function makeGradient(id, colors, { x2 = "0", y2 = "1", opacity = 1 } = {}) {
@@ -35,11 +36,21 @@ function NecroStaff({
   orbStrokeId,
   orbGlowId,
   skullColor,
+  outlineColor,
 }) {
   return (
     <G transform="translate(96,88) rotate(-25)">
       {/* Stab */}
-      <Rect x={-2} y={0} width={4} height={46} fill={`url(#${staffId})`} />
+      <Rect
+        x={-2}
+        y={0}
+        width={4}
+        height={46}
+        rx={2}
+        fill={`url(#${staffId})`}
+        stroke={outlineColor}
+        strokeWidth={1}
+      />
 
       {/* Orb */}
       <Circle
@@ -48,14 +59,24 @@ function NecroStaff({
         r={10}
         fill={`url(#${orbMainId})`}
         stroke={`url(#${orbStrokeId})`}
-        strokeWidth={2.5}
+        strokeWidth={2}
+      />
+      <Circle
+        cx={0}
+        cy={-8}
+        r={10}
+        fill="none"
+        stroke={outlineColor}
+        strokeWidth={1}
       />
 
       {/* Totenkopf im Orb */}
       <Path
         d="M-4 -9 Q0 -14 4 -9 Q4 -5 0 -2 Q-4 -5 -4 -9Z"
         fill={skullColor}
-        opacity={0.8}
+        stroke={outlineColor}
+        strokeWidth={0.8}
+        opacity={0.85}
       />
 
       {/* Glow */}
@@ -74,19 +95,19 @@ function NecroStaff({
 
 export default function Necromancer({
   // === Farben ===
-  skin = "#E0D4D4",
-  outlineColor = "#202020",
+  skin = defaultColors.skin,
+  outlineColor = defaultColors.outline,
 
-  robeColors = ["#222", "#111"],
-  hoodColors = ["#111", "#000"],
+  robeColors = defaultColors.robe,
+  hoodColors = defaultColors.hood,
 
-  staffColors = ["#2C2C2C", "#1A1A1A"],
-  orbMainColors = ["#111", "#333"],
-  orbStrokeColors = ["#0ff", "#08f"],
-  orbGlowColors = ["#0ff", "#0aa"],
+  staffColors = defaultColors.staff,
+  orbMainColors = defaultColors.orbMain,
+  orbStrokeColors = defaultColors.orbStroke,
+  orbGlowColors = defaultColors.orbGlow,
 
-  skullColors = "#0ff",
-  runeColors = ["#0ff", "#08f"],
+  skullColors = defaultColors.skull,
+  runeColors = defaultColors.runes,
 
   strokeWidth = 2,
 }) {
@@ -129,29 +150,25 @@ export default function Necromancer({
       />
 
       {/* Gesichtsschatten */}
-      <Path d="M54 56 Q70 70 86 56 Z" fill="rgba(0,0,0,0.2)" />
+      <Path d="M54 56 Q70 70 86 56 Z" fill="rgba(0,0,0,0.25)" />
 
-      {/* 👇 Arme (schmal & länger) */}
-      <Rect
-        x={44}
-        y={74}
-        width={6}
-        height={22}
-        rx={3}
-        fill={skin}
-        stroke={outlineColor}
-        strokeWidth={strokeWidth}
-      />
-      <Rect
-        x={90}
-        y={74}
-        width={6}
-        height={22}
-        rx={3}
-        fill={skin}
-        stroke={outlineColor}
-        strokeWidth={strokeWidth}
-      />
+      {/* Arme */}
+      {[
+        { x: 44, y: 74 },
+        { x: 90, y: 74 },
+      ].map((pos, i) => (
+        <Rect
+          key={`arm-${i}`}
+          x={pos.x}
+          y={pos.y}
+          width={6}
+          height={22}
+          rx={3}
+          fill={skin}
+          stroke={outlineColor}
+          strokeWidth={strokeWidth}
+        />
+      ))}
 
       {/* Stab + Orb */}
       <NecroStaff
@@ -160,6 +177,7 @@ export default function Necromancer({
         orbStrokeId="nec-orb-stroke"
         orbGlowId="nec-orb-glow"
         skullColor={skullColors}
+        outlineColor={outlineColor}
       />
 
       {/* Magische Runenlinien */}
@@ -167,13 +185,13 @@ export default function Necromancer({
         d="M70 72 Q70 100 70 118"
         stroke="url(#nec-runes)"
         strokeWidth={1.5}
-        opacity={0.6}
+        opacity={0.65}
       />
       <Path
         d="M60 80 Q70 95 80 80"
         stroke="url(#nec-runes)"
-        strokeWidth={1.2}
-        opacity={0.6}
+        strokeWidth={1.3}
+        opacity={0.65}
       />
     </G>
   );

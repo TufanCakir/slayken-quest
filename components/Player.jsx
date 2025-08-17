@@ -2,14 +2,17 @@
 import React, { useMemo } from "react";
 import Svg, { G, Circle, Path, Line, Ellipse } from "react-native-svg";
 import { useSelectedPlayer } from "../context/SelectedPlayerContext";
-import classColors from "../data/classColors";
-import faceConfigs from "../data/faceConfigs"; // 👈 neu eingebunden
+import faceConfigs from "../data/faceConfigs";
+
+// ✅ Klassen-Renderer
 import Berserker from "../classes/Berserker";
 import Mage from "../classes/Mage";
 import Assassin from "../classes/Assassin";
 import Ranger from "../classes/Ranger";
 import Paladin from "../classes/Paladin";
 import Necromancer from "../classes/Necromancer";
+import DemonHunter from "../classes/DemonHunter";
+import DeathKnight from "../classes/DeathKnight";
 
 const CLASS_RENDERERS = {
   Berserker,
@@ -18,8 +21,11 @@ const CLASS_RENDERERS = {
   Mage,
   Ranger,
   Necromancer,
+  DemonHunter,
+  DeathKnight,
 };
 
+// 😃 Face-Moods
 const MOODS = {
   happy: {
     mouth: { d: "M{mx1} {my} Q{mcx} {mcy} {mx2} {my}", strokeWidth: 2.5 },
@@ -47,7 +53,7 @@ const MOODS = {
 // 🟢 Player-Komponente
 function Player({
   size = 140,
-  sprite: spriteProp,
+  sprite: spriteProp, // alle Farben kommen von hier
   mood = "happy",
   playerClass,
   showShadow = true,
@@ -63,15 +69,12 @@ function Player({
   );
   const ClassRenderer = CLASS_RENDERERS[charClass] || Berserker;
 
-  // 2) Farben mergen (Defaults → gespeicherter Spieler → expliziter Prop)
+  // 2) Sprite mergen: Prop → Context
   const colors = useMemo(() => {
-    const defaults = classColors?.[charClass] || {};
-    const fromSelected = selectedPlayer?.sprite || {};
-    const fromProp = spriteProp || {};
-    return { ...defaults, ...fromSelected, ...fromProp };
-  }, [charClass, selectedPlayer?.sprite, spriteProp]);
+    return { ...(selectedPlayer?.sprite || {}), ...(spriteProp || {}) };
+  }, [selectedPlayer?.sprite, spriteProp]);
 
-  // 3) FaceConfig aus faceConfigs laden (Fallback auf BASE-Face)
+  // 3) FaceConfig laden
   const faceConfig = useMemo(
     () => faceConfigs[charClass] || faceConfigs.Berserker,
     [charClass]
@@ -80,21 +83,21 @@ function Player({
   // 4) Mood bestimmen
   const faceMood = useMemo(() => MOODS[mood] || MOODS.neutral, [mood]);
 
-  // Hilfsfunktion → Template Strings ersetzen
+  // Template-Funktion für dynamische Paths
   const renderDynamicPath = (template, values) =>
     template.replace(/\{(.*?)\}/g, (_, key) => values?.[key] ?? 0);
 
-  // 🟡 Falls wirklich nichts vorhanden → nicht rendern
-  if (!spriteProp && !selectedPlayer && !classColors?.[charClass]) {
+  // 🟡 Kein Sprite? → nichts rendern
+  if (!spriteProp && !selectedPlayer) {
     return null;
   }
 
-  // ---- Render Sub-Komponenten ----
+  // ---- Render-Teile ----
   const renderLegs = () =>
     showLegs && (
       <G
         id="legs"
-        stroke={colors.outlineColor}
+        stroke={colors.outlineColor || "#000"}
         strokeWidth={3}
         strokeLinecap="round"
       >
@@ -107,15 +110,15 @@ function Player({
     showFace && (
       <G id="face" accessibilityLabel="Gesicht">
         {/* Augen */}
-        <Circle {...faceConfig.eyeLeft} fill={colors.outlineColor} />
-        <Circle {...faceConfig.eyeRight} fill={colors.outlineColor} />
+        <Circle {...faceConfig.eyeLeft} fill={colors.outlineColor || "#000"} />
+        <Circle {...faceConfig.eyeRight} fill={colors.outlineColor || "#000"} />
 
         {/* Augenbrauen */}
         {faceMood.brows.map((b, i) => (
           <Path
             key={`brow-${i}`}
             d={renderDynamicPath(b.d, faceConfig.brows)}
-            stroke={colors.outlineColor}
+            stroke={colors.outlineColor || "#000"}
             strokeWidth={b.strokeWidth || 2}
             fill="none"
             strokeLinecap="round"
@@ -123,12 +126,12 @@ function Player({
         ))}
 
         {/* Nase */}
-        <Circle {...faceConfig.nose} fill={colors.outlineColor} />
+        <Circle {...faceConfig.nose} fill={colors.outlineColor || "#000"} />
 
         {/* Mund */}
         <Path
           d={renderDynamicPath(faceMood.mouth.d, faceConfig.mouth)}
-          stroke={colors.outlineColor}
+          stroke={colors.outlineColor || "#000"}
           strokeWidth={faceMood.mouth.strokeWidth || 2}
           fill="none"
           strokeLinecap="round"
@@ -146,7 +149,7 @@ function Player({
       {/* Beine */}
       {renderLegs()}
 
-      {/* Klassen-spezifischer Körper */}
+      {/* Körper */}
       <ClassRenderer {...colors} />
 
       {/* Gesicht */}

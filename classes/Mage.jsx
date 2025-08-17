@@ -9,11 +9,16 @@ import {
   LinearGradient,
   Stop,
 } from "react-native-svg";
+import defaultColors from "../data/mageColors"; // 🎨 externe Farb-Defaults
 
+// =========================================================
 // 🔧 Gradient-Helfer
+// =========================================================
 function makeGradient(id, colors, { x2 = "0", y2 = "1", opacity = 1 } = {}) {
+  if (!colors) return null;
   const stops = Array.isArray(colors) ? colors : [colors];
   const count = Math.max(stops.length - 1, 1);
+
   return (
     <LinearGradient id={id} x1="0" y1="0" x2={x2} y2={y2} spreadMethod="pad">
       {stops.map((c, i) => (
@@ -28,11 +33,20 @@ function makeGradient(id, colors, { x2 = "0", y2 = "1", opacity = 1 } = {}) {
   );
 }
 
-// 🔮 Unterkomponente: Magischer Stab mit Orb
-function MagicStaff({ staffId, orbMainId, orbInnerId, orbGlowId, runeColor }) {
+// =========================================================
+// 🔮 Magischer Stab + Orb
+// =========================================================
+function MagicStaff({
+  staffId,
+  orbMainId,
+  orbInnerId,
+  orbGlowId,
+  runeColor,
+  outlineColor,
+}) {
   return (
     <G transform="translate(96,88) rotate(-35)">
-      {/* Holzstab */}
+      {/* Stab */}
       <Rect
         x={-2}
         y={0}
@@ -40,6 +54,8 @@ function MagicStaff({ staffId, orbMainId, orbInnerId, orbGlowId, runeColor }) {
         height={44}
         rx={2}
         fill={`url(#${staffId})`}
+        stroke={outlineColor}
+        strokeWidth={1}
       />
 
       {/* Orb */}
@@ -48,10 +64,18 @@ function MagicStaff({ staffId, orbMainId, orbInnerId, orbGlowId, runeColor }) {
         cy={-8}
         r={10}
         fill={`url(#${orbMainId})`}
-        stroke="#fff"
+        stroke={outlineColor}
         strokeWidth={1.5}
       />
-      <Circle cx={0} cy={-8} r={6} fill={`url(#${orbInnerId})`} opacity={0.9} />
+      <Circle
+        cx={0}
+        cy={-8}
+        r={6}
+        fill={`url(#${orbInnerId})`}
+        stroke={outlineColor}
+        strokeWidth={1}
+        opacity={0.9}
+      />
 
       {/* Glow */}
       <Circle
@@ -75,18 +99,20 @@ function MagicStaff({ staffId, orbMainId, orbInnerId, orbGlowId, runeColor }) {
   );
 }
 
+// =========================================================
+// 🧙 Mage
+// =========================================================
 export default function Mage({
-  // === Farben ===
-  skin = "#EED6C4",
-  armorColors = ["#512DA8", "#311B92"], // Robe & Kapuze
-  staffColors = ["#6B4226", "#4E342E"], // Holzstab
-  orbMainColors = ["#9C27B0", "#6A1B9A"], // Orb Hauptfarbe
-  orbInnerColors = ["#E1BEE7", "#CE93D8"], // Orb inneres Leuchten
-  orbGlowColors = ["#B388FF", "#7C4DFF"], // Glow
-  runeColors = "#FFFFFF", // Runen im Orb
-  robeRuneColors = ["#B388FF", "#7E57C2"], // Linien auf Robe
+  skin = defaultColors.skin,
+  armorColors = defaultColors.armor,
+  staffColors = defaultColors.staff,
+  orbMainColors = defaultColors.orbMain,
+  orbInnerColors = defaultColors.orbInner,
+  orbGlowColors = defaultColors.orbGlow,
+  runeColor = defaultColors.rune,
+  robeRuneColors = defaultColors.robeRunes,
 
-  outlineColor = "#202020",
+  outlineColor = defaultColors.outline,
   strokeWidth = 2,
 }) {
   return (
@@ -130,27 +156,23 @@ export default function Mage({
       {/* Gesichtsschatten */}
       <Path d="M54 56 Q70 68 86 56 Z" fill="rgba(0,0,0,0.25)" />
 
-      {/* 👇 Arme (schlank, mage-like) */}
-      <Rect
-        x={44}
-        y={74}
-        width={6}
-        height={20}
-        rx={3}
-        fill={skin}
-        stroke={outlineColor}
-        strokeWidth={strokeWidth}
-      />
-      <Rect
-        x={90}
-        y={74}
-        width={6}
-        height={20}
-        rx={3}
-        fill={skin}
-        stroke={outlineColor}
-        strokeWidth={strokeWidth}
-      />
+      {/* Arme */}
+      {[
+        { x: 44, y: 74 }, // links
+        { x: 90, y: 74 }, // rechts
+      ].map((pos, i) => (
+        <Rect
+          key={`arm-${i}`}
+          x={pos.x}
+          y={pos.y}
+          width={6}
+          height={20}
+          rx={3}
+          fill={skin}
+          stroke={outlineColor}
+          strokeWidth={strokeWidth}
+        />
+      ))}
 
       {/* Stab + Orb */}
       <MagicStaff
@@ -158,7 +180,8 @@ export default function Mage({
         orbMainId="mage-orb-main"
         orbInnerId="mage-orb-inner"
         orbGlowId="mage-orb-glow"
-        runeColor={runeColors}
+        runeColor={runeColor}
+        outlineColor={outlineColor}
       />
 
       {/* Magische Linien auf Robe */}

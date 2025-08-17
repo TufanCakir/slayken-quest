@@ -11,7 +11,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Alle deine Kontexte importieren
-import { usePlayers } from "../context/PlayersContext";
+import { usePlayers } from "../context/PlayerContext";
 import { useCoins } from "../context/CoinsContext";
 import { useCrystals } from "../context/CrystalsContext";
 import { useAccountLevel } from "../context/AccountLevelContext";

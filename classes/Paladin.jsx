@@ -10,9 +10,10 @@ import {
   LinearGradient,
   Stop,
 } from "react-native-svg";
+import defaultColors from "../data/paladinColors"; // 🎨 externe Farb-Defaults
 
 // 🔧 Gradient-Helfer
-function makeGradient(id, colors, { x2 = "0", y2 = "1" } = {}) {
+function makeGradient(id, colors, { x2 = "0", y2 = "1", opacity = 1 } = {}) {
   const stops = Array.isArray(colors) ? colors : [colors];
   const count = Math.max(stops.length - 1, 1);
   return (
@@ -22,6 +23,7 @@ function makeGradient(id, colors, { x2 = "0", y2 = "1" } = {}) {
           key={`${id}-${i}`}
           offset={`${(i / count) * 100}%`}
           stopColor={c}
+          stopOpacity={opacity}
         />
       ))}
     </LinearGradient>
@@ -32,25 +34,27 @@ function makeGradient(id, colors, { x2 = "0", y2 = "1" } = {}) {
 function PaladinShield({ shieldId, crossId, outline }) {
   return (
     <G transform="translate(100,85)">
+      {/* Grundform */}
       <Path
         d="M0 0 L20 15 L20 50 L0 65 L-20 50 L-20 15 Z"
         fill={`url(#${shieldId})`}
         stroke={outline}
-        strokeWidth={3}
+        strokeWidth={2.5}
       />
+      {/* Kreuz */}
       <Line
         x1={0}
-        y1={10}
+        y1={12}
         x2={0}
-        y2={45}
+        y2={48}
         stroke={`url(#${crossId})`}
         strokeWidth={3}
       />
       <Line
         x1={-10}
-        y1={28}
+        y1={30}
         x2={10}
-        y2={28}
+        y2={30}
         stroke={`url(#${crossId})`}
         strokeWidth={3}
       />
@@ -61,23 +65,29 @@ function PaladinShield({ shieldId, crossId, outline }) {
 // ⚔ Schwert
 function PaladinSword({ gripId, weaponId, bladeId, outline }) {
   return (
-    <G transform="translate(40,85) rotate(-20)">
+    <G transform="translate(44,90) rotate(-25)">
       {/* Griff */}
-      <Rect x={-2} y={0} width={4} height={20} fill={`url(#${gripId})`} />
-
+      <Rect
+        x={-2}
+        y={0}
+        width={4}
+        height={20}
+        fill={`url(#${gripId})`}
+        stroke={outline}
+        strokeWidth={1}
+      />
       {/* Parierstange */}
       <Line
-        x1={-8}
+        x1={-10}
         y1={0}
-        x2={8}
+        x2={10}
         y2={0}
         stroke={`url(#${weaponId})`}
         strokeWidth={3}
       />
-
       {/* Klinge */}
       <Path
-        d="M0 0 L6 -40 L-6 -40 Z"
+        d="M0 0 L6 -42 L-6 -42 Z"
         fill={`url(#${bladeId})`}
         stroke={outline}
         strokeWidth={2}
@@ -88,17 +98,16 @@ function PaladinSword({ gripId, weaponId, bladeId, outline }) {
 
 export default function Paladin({
   // === Farben ===
-  skin = "#FFD1A1",
+  skin = defaultColors.skin,
+  armorColors = defaultColors.armor,
+  helmetColors = defaultColors.helmet,
+  shieldColors = defaultColors.shield,
+  weaponColors = defaultColors.weapon,
+  swordBladeColors = defaultColors.swordBlade,
+  gripColors = defaultColors.grip,
+  crossColors = defaultColors.cross,
+  outlineColor = defaultColors.outline,
 
-  armorColors = ["#FFD700", "#FFEA00"],
-  helmetColors = ["#B8860B", "#FFD700"],
-  shieldColors = ["#FFD700", "#FBC02D"],
-  weaponColors = ["#C0C0C0", "#E0E0E0"],
-  swordBladeColors = ["#9C27B0", "#BA68C8"],
-  gripColors = ["#5B4A3A", "#3E2F23"],
-  crossColors = ["#202020"],
-
-  outlineColor = "#202020",
   strokeWidth = 2,
 }) {
   return (
@@ -126,18 +135,18 @@ export default function Paladin({
       />
 
       {/* Schulterplatten */}
-      <Path
-        d="M48 70 Q50 60 60 65 Q55 75 48 70Z"
-        fill="url(#paladin-armor)"
-        stroke={outlineColor}
-        strokeWidth={strokeWidth}
-      />
-      <Path
-        d="M92 70 Q90 60 80 65 Q85 75 92 70Z"
-        fill="url(#paladin-armor)"
-        stroke={outlineColor}
-        strokeWidth={strokeWidth}
-      />
+      {[
+        { d: "M48 70 Q50 60 60 65 Q55 75 48 70Z" },
+        { d: "M92 70 Q90 60 80 65 Q85 75 92 70Z" },
+      ].map((p, i) => (
+        <Path
+          key={`shoulder-${i}`}
+          d={p.d}
+          fill="url(#paladin-armor)"
+          stroke={outlineColor}
+          strokeWidth={strokeWidth}
+        />
+      ))}
 
       {/* Kopf */}
       <Circle
@@ -151,41 +160,38 @@ export default function Paladin({
 
       {/* Helm */}
       <Path
-        d="M52 52 Q70 28 88 52 Z"
+        d="M52 52 Q70 26 88 52 Z"
         fill="url(#paladin-helmet)"
         stroke={outlineColor}
         strokeWidth={strokeWidth + 1}
       />
+      {/* Helm-Mittelstreifen */}
       <Line
         x1={70}
-        y1={40}
+        y1={34}
         x2={70}
-        y2={60}
+        y2={58}
         stroke={outlineColor}
         strokeWidth={strokeWidth}
       />
 
       {/* Arme */}
-      <Rect
-        x={42}
-        y={72}
-        width={8}
-        height={18}
-        rx={3}
-        fill={skin}
-        stroke={outlineColor}
-        strokeWidth={strokeWidth}
-      />
-      <Rect
-        x={90}
-        y={72}
-        width={8}
-        height={18}
-        rx={3}
-        fill={skin}
-        stroke={outlineColor}
-        strokeWidth={strokeWidth}
-      />
+      {[
+        { x: 42, y: 72 },
+        { x: 90, y: 72 },
+      ].map((arm, i) => (
+        <Rect
+          key={`arm-${i}`}
+          x={arm.x}
+          y={arm.y}
+          width={8}
+          height={18}
+          rx={3}
+          fill={skin}
+          stroke={outlineColor}
+          strokeWidth={strokeWidth}
+        />
+      ))}
 
       {/* Schild */}
       <PaladinShield

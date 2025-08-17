@@ -7,7 +7,7 @@ import HomeScreen from "./screens/HomeScreen";
 import { AccountLevelProvider } from "./context/AccountLevelContext";
 import { CoinsProvider } from "./context/CoinsContext";
 import { CrystalsProvider } from "./context/CrystalsContext";
-import { PlayersProvider } from "./context/PlayersContext";
+import { PlayerProvider } from "./context/PlayerContext";
 
 // Screens
 import CharacterSelectionScreen from "./screens/CharacterSelectionScreen";
@@ -19,7 +19,7 @@ const Stack = createNativeStackNavigator();
 export default function App() {
   return (
     <SafeAreaProvider>
-      <PlayersProvider>
+      <PlayerProvider>
         <AccountLevelProvider>
           <CoinsProvider>
             <CrystalsProvider>
@@ -60,7 +60,7 @@ export default function App() {
             </CrystalsProvider>
           </CoinsProvider>
         </AccountLevelProvider>
-      </PlayersProvider>
+      </PlayerProvider>
     </SafeAreaProvider>
   );
 }

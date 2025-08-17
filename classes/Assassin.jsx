@@ -10,11 +10,16 @@ import {
   LinearGradient,
   Stop,
 } from "react-native-svg";
+import defaultColors from "../data/assassinColors"; // 🎨 externe Farb-Defaults
 
+// =========================================================
 // 🔧 Gradient-Helfer
+// =========================================================
 function makeGradient(id, colors, { x2 = "0", y2 = "1", opacity = 1 } = {}) {
+  if (!colors) return null;
   const stops = Array.isArray(colors) ? colors : [colors];
   const count = Math.max(stops.length - 1, 1);
+
   return (
     <LinearGradient id={id} x1="0" y1="0" x2={x2} y2={y2} spreadMethod="pad">
       {stops.map((c, i) => (
@@ -29,7 +34,9 @@ function makeGradient(id, colors, { x2 = "0", y2 = "1", opacity = 1 } = {}) {
   );
 }
 
-// 🔪 Dolch-Renderer (links/rechts)
+// =========================================================
+// 🔪 Dolch-Renderer
+// =========================================================
 function Dagger({ x, y, rotation, bladeId, glowId, gripColor, outline }) {
   return (
     <G transform={`translate(${x},${y}) rotate(${rotation})`}>
@@ -42,30 +49,37 @@ function Dagger({ x, y, rotation, bladeId, glowId, gripColor, outline }) {
         stroke={`url(#${bladeId})`}
         strokeWidth={3}
       />
-      {/* Griff/Spitze */}
+      {/* Griff */}
       <Path
         d="M-4 22 L0 32 L4 22 Z"
         fill={gripColor}
         stroke={outline}
         strokeWidth={1}
       />
-      {/* Glow */}
-      <Path d="M0 0 L0 22" stroke={`url(#${glowId})`} strokeWidth={1.5} />
+      {/* Glow-Effekt */}
+      <Path
+        d="M0 0 L0 22"
+        stroke={`url(#${glowId})`}
+        strokeWidth={1.5}
+        opacity={0.7}
+      />
     </G>
   );
 }
 
+// =========================================================
+// 🗡 Assassin
+// =========================================================
 export default function Assassin({
   // === Farben ===
-  skin = "#FFE3B3",
-  armorColor = "#2E2E2E",
-  outlineColor = "#202020",
-
-  weaponColors = ["#B0BEC5", "#90A4AE"], // Dolchklinge
-  gripColor = "#ECEFF1", // Dolchgriff
-  glowColors = ["#00E5FF", "#18FFFF"], // Dolch-Glow
-  bandColor = "#424242", // Brustband
-  hoodColors = ["#1C1C1C", "#333333"], // Kapuze Verlauf
+  skin = defaultColors.skin,
+  armorColors = defaultColors.armor,
+  hoodColors = defaultColors.hood,
+  weaponColors = defaultColors.weapon,
+  gripColor = defaultColors.grip,
+  glowColors = defaultColors.glow,
+  bandColor = defaultColors.band,
+  outlineColor = defaultColors.outline,
 
   strokeWidth = 2,
 }) {
@@ -76,16 +90,17 @@ export default function Assassin({
         {makeGradient("assassin-blade", weaponColors)}
         {makeGradient("assassin-glow", glowColors, { opacity: 0.7 })}
         {makeGradient("assassin-hood", hoodColors)}
+        {makeGradient("assassin-armor", armorColors)}
       </Defs>
 
-      {/* Leichte Rüstung */}
+      {/* Körper / Rüstung */}
       <Rect
         x={52}
         y={72}
         width={36}
         height={28}
         rx={4}
-        fill={armorColor}
+        fill="url(#assassin-armor)"
         stroke={outlineColor}
         strokeWidth={strokeWidth}
       />
@@ -111,8 +126,7 @@ export default function Assassin({
       {/* Gesichtsschatten */}
       <Path d="M55 55 Q70 66 85 55 Z" fill="rgba(0,0,0,0.35)" />
 
-      {/* 👇 Arme (schlank & leicht angewinkelt) */}
-      {/* Linker Arm */}
+      {/* Arme */}
       <G transform="translate(46,74) rotate(-8)">
         <Rect
           x={-3}
@@ -125,7 +139,6 @@ export default function Assassin({
           strokeWidth={strokeWidth}
         />
       </G>
-      {/* Rechter Arm */}
       <G transform="translate(90,74) rotate(8)">
         <Rect
           x={-3}

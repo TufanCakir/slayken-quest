@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Text,
   Dimensions,
+  Button,
 } from "react-native";
 import { useSelectedPlayer } from "../context/SelectedPlayerContext";
 import Player from "../components/Player";
@@ -17,17 +18,16 @@ import XPBar from "../components/XPBar";
 import Header from "../components/Header";
 import { useCoins } from "../context/CoinsContext";
 import { useCrystals } from "../context/CrystalsContext";
-import { useAccountLevel } from "../context/AccountLevelContext";
 import BattleBackground from "../components/BattleBackground";
 import StageProgress from "../components/StageProgress";
 import AutoPlay from "../components/AutoPlay";
+import { usePlayers } from "../context/PlayerContext";
 
 const { width, height } = Dimensions.get("window");
 const CENTER_X = width / 2;
 const ENEMY_Y = height * 0.45;
 const PLAYER_Y = height - 120;
 
-// ⚡ Standard-Rewards (Fallback)
 const DEFAULT_REWARDS = { gold: 5, crystals: 1, xp: 10 };
 const TOTAL_STAGES = 10;
 
@@ -35,10 +35,13 @@ export default function BattleScreen() {
   const { selectedPlayer } = useSelectedPlayer();
   const { addCoins } = useCoins();
   const { addCrystals } = useCrystals();
-  const { level, xp, gainXp } = useAccountLevel();
+  const { players, addXp, resetPlayer } = usePlayers();
 
-  const MAX_PLAYER_HP = selectedPlayer?.hp?.max ?? 100;
-  const PLAYER_DAMAGE = selectedPlayer?.damage ?? 5;
+  // 🎯 Aktueller Spieler aus PlayerContext
+  const activePlayer = players.find((p) => p.id === selectedPlayer?.id);
+
+  const MAX_PLAYER_HP = activePlayer?.hp?.max ?? 100;
+  const PLAYER_DAMAGE = activePlayer?.damage ?? 5;
 
   const [stage, setStage] = useState(1);
   const [autoPlay, setAutoPlay] = useState(false);
@@ -50,7 +53,6 @@ export default function BattleScreen() {
   // 🔹 Neuen Gegner + BG spawnen
   const spawnEnemy = useCallback(() => {
     if (!enemiesData.length) return;
-
     const newEnemy =
       enemiesData[Math.floor(Math.random() * enemiesData.length)];
     const nextBg = backgrounds[Math.floor(Math.random() * backgrounds.length)];
@@ -60,19 +62,27 @@ export default function BattleScreen() {
     setBackgroundId(nextBg.id);
   }, []);
 
-  // 🔹 Rewards & Stage-Progress (NACHDEM Enemy tot ist)
+  // 🔹 Rewards & Stage-Progress
   useEffect(() => {
-    if (enemy && enemyHp <= 0) {
-      addCoins(enemy.goldReward ?? DEFAULT_REWARDS.gold);
-      addCrystals(enemy.crystalReward ?? DEFAULT_REWARDS.crystals);
-      gainXp(enemy.xpReward ?? DEFAULT_REWARDS.xp, () =>
-        setPlayerHp(MAX_PLAYER_HP)
-      );
+    if (!enemy || enemyHp > 0 || !activePlayer) return;
 
-      setStage((prev) => (prev < TOTAL_STAGES ? prev + 1 : 1));
-      spawnEnemy();
-    }
-  }, [enemyHp, enemy, addCoins, addCrystals, gainXp, spawnEnemy]);
+    addCoins(enemy.goldReward ?? DEFAULT_REWARDS.gold);
+    addCrystals(enemy.crystalReward ?? DEFAULT_REWARDS.crystals);
+    addXp(activePlayer.id, enemy.xpReward ?? DEFAULT_REWARDS.xp);
+
+    setPlayerHp(MAX_PLAYER_HP);
+    setStage((prev) => (prev < TOTAL_STAGES ? prev + 1 : 1));
+    spawnEnemy();
+  }, [
+    enemyHp,
+    enemy,
+    addCoins,
+    addCrystals,
+    addXp,
+    spawnEnemy,
+    activePlayer,
+    MAX_PLAYER_HP,
+  ]);
 
   // 🔹 Spieler lädt -> Gegner spawnen
   useEffect(() => {
@@ -81,17 +91,14 @@ export default function BattleScreen() {
 
   // 🔹 Kampf-Logik
   const handleStageTap = useCallback(() => {
-    if (!enemy) return;
+    if (!enemy || enemyHp <= 0 || playerHp <= 0) return;
 
-    // Schaden am Gegner
     setEnemyHp((prevHp) => Math.max(prevHp - PLAYER_DAMAGE, 0));
-
-    // Gegenschaden
     setPlayerHp((prev) => Math.max(prev - (enemy?.damage ?? 1), 0));
-  }, [enemy, PLAYER_DAMAGE]);
+  }, [enemy, enemyHp, playerHp, PLAYER_DAMAGE]);
 
   // 🔹 Kein Spieler ausgewählt
-  if (!selectedPlayer) {
+  if (!selectedPlayer || !activePlayer) {
     return (
       <View style={styles.center}>
         <Text style={styles.noPlayer}>❌ Kein Spieler ausgewählt!</Text>
@@ -154,25 +161,41 @@ export default function BattleScreen() {
       {/* Spieler */}
       <View style={styles.playerWrap}>
         <XPBar
-          xp={xp}
-          maxXp={Math.max(level * 100, 1)} // kein 0
-          level={level}
-          width={200}
-          height={20}
+          xp={activePlayer.xp}
+          maxXp={activePlayer.xpToNextLevel}
+          level={activePlayer.level}
+          width={220}
+          height={22}
         />
         <Player
           size={130}
-          sprite={selectedPlayer.sprite}
+          sprite={activePlayer.sprite}
           position={[CENTER_X, PLAYER_Y]}
         />
       </View>
+
+      {/* DEBUG XP / Reset */}
+      {__DEV__ && (
+        <View style={styles.debugBox}>
+          <Text style={styles.debugText}>
+            {activePlayer.name} (Lvl {activePlayer.level}) — {activePlayer.xp}/
+            {activePlayer.xpToNextLevel}
+          </Text>
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            <Button title="+50 XP" onPress={() => addXp(activePlayer.id, 50)} />
+            <Button
+              title="Reset"
+              onPress={() => resetPlayer(activePlayer.id)}
+            />
+          </View>
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#111" },
-
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   noPlayer: { color: "#fff", fontSize: 18, fontWeight: "600" },
 
@@ -225,4 +248,16 @@ const styles = StyleSheet.create({
     zIndex: 99,
   },
   autoPlayText: { color: "#fff", fontWeight: "700", fontSize: 14 },
+
+  debugBox: {
+    position: "absolute",
+    top: 120,
+    left: 10,
+    right: 10,
+    backgroundColor: "#00000077",
+    padding: 10,
+    borderRadius: 8,
+    zIndex: 99,
+  },
+  debugText: { color: "#fff", fontSize: 12 },
 });

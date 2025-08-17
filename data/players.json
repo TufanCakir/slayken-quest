@@ -1,62 +1,66 @@
 [
   {
     "id": "player_001",
-    "name": "Hero",
+    "name": "Berserker",
     "class": "Berserker",
     "level": 1,
     "xp": 0,
-    "xpToNextLevel": 100,
-    "gold": 0,
-    "hp": { "current": 100, "max": 100 }
+    "xpToNextLevel": 100
   },
   {
     "id": "player_002",
-    "name": "Knight",
+    "name": "Paladin",
     "class": "Paladin",
-    "level": 5,
-    "xp": 20,
-    "xpToNextLevel": 200,
-    "gold": 50,
-    "hp": { "current": 180, "max": 200 }
+    "level": 1,
+    "xp": 0,
+    "xpToNextLevel": 100
   },
   {
     "id": "player_003",
-    "name": "Rogue",
+    "name": "Assassin",
     "class": "Assassin",
-    "level": 3,
-    "xp": 50,
-    "xpToNextLevel": 150,
-    "gold": 30,
-    "hp": { "current": 120, "max": 130 }
+    "level": 1,
+    "xp": 0,
+    "xpToNextLevel": 100
   },
   {
     "id": "player_004",
-    "name": "Arwen",
+    "name": "Mage",
     "class": "Mage",
-    "level": 4,
-    "xp": 80,
-    "xpToNextLevel": 160,
-    "gold": 40,
-    "hp": { "current": 90, "max": 90 }
+    "level": 1,
+    "xp": 0,
+    "xpToNextLevel": 100
   },
   {
     "id": "player_005",
-    "name": "Thalor",
+    "name": "Ranger",
     "class": "Ranger",
-    "level": 2,
-    "xp": 30,
-    "xpToNextLevel": 120,
-    "gold": 20,
-    "hp": { "current": 110, "max": 110 }
+    "level": 1,
+    "xp": 0,
+    "xpToNextLevel": 100
   },
   {
     "id": "player_006",
-    "name": "Morgath",
+    "name": "Necromancer",
     "class": "Necromancer",
-    "level": 6,
-    "xp": 200,
-    "xpToNextLevel": 300,
-    "gold": 100,
-    "hp": { "current": 140, "max": 140 }
+    "level": 1,
+    "xp": 0,
+    "xpToNextLevel": 100
+  },
+  {
+    "id": "player_007",
+    "name": "DemonHunter",
+    "class": "DemonHunter",
+    "level": 1,
+    "xp": 0,
+    "xpToNextLevel": 100
+  },
+  {
+    "id": "player_008",
+    "name": "DeathKnight",
+    "class": "DeathKnight",
+    "level": 1,
+    "xp": 0,
+    "xpToNextLevel": 100
   }
 ]

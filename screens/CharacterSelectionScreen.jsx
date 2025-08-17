@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useSelectedPlayer } from "../context/SelectedPlayerContext";
-import { usePlayers } from "../context/PlayersContext"; // ⬅️ globaler Context
+import { usePlayers } from "../context/PlayerContext"; // ⬅️ globaler Context
 import Player from "../components/Player";
 
 export default function CharacterSelectionScreen() {

@@ -10,9 +10,30 @@ import {
   Alert,
 } from "react-native";
 import Player from "../components/Player";
-import classColors from "../data/classColors";
 import playersData from "../data/players.json";
-import { usePlayers } from "../context/PlayersContext";
+import { usePlayers } from "../context/PlayerContext";
+
+// 🎨 Klassen-Farbsets
+import berserkerColors from "../data/berserkerColors";
+import demonHunterColors from "../data/demonHunterColors";
+import paladinColors from "../data/paladinColors";
+import assassinColors from "../data/assassinColors";
+import mageColors from "../data/mageColors";
+import necromancerColors from "../data/necromancerColors";
+import rangerColors from "../data/rangerColors";
+import deathKnightColors from "../data/deathKnightColors";
+
+// Mapping → Klasse → Farbset
+const CLASS_COLORS = {
+  Berserker: berserkerColors,
+  DemonHunter: demonHunterColors,
+  DeathKnight: deathKnightColors,
+  Paladin: paladinColors,
+  Assassin: assassinColors,
+  Mage: mageColors,
+  Necromancer: necromancerColors,
+  Ranger: rangerColors,
+};
 
 // 🔑 Hilfsfunktionen
 const randomOf = (arr) => arr[Math.floor(Math.random() * arr.length)];
@@ -40,7 +61,6 @@ function ColorSwatch({ color, selected, onPress }) {
   return (
     <TouchableOpacity
       onPress={onPress}
-      accessibilityRole="button"
       style={[
         styles.colorBox,
         { backgroundColor: bg, borderColor: border },
@@ -57,9 +77,9 @@ export default function CreateCharacterScreen({ navigation }) {
   const [name, setName] = useState("");
   const [selectedClass, setSelectedClass] = useState(allClasses[0]);
 
-  // 🎨 Standard-Sprite nach Klasse
+  // 🎨 Default-Sprite nach Klasse
   const buildSpriteDefaults = useCallback((cls) => {
-    const base = classColors[cls] || {};
+    const base = CLASS_COLORS[cls] || {};
     return Object.fromEntries(
       Object.entries(base).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v])
     );
@@ -78,7 +98,7 @@ export default function CreateCharacterScreen({ navigation }) {
   // 🎲 Zufallsgenerator
   const handleRandomize = () => {
     const cls = randomOf(allClasses);
-    const base = classColors[cls] || {};
+    const base = CLASS_COLORS[cls] || {};
     const randomSprite = Object.fromEntries(
       Object.entries(base).map(([k, v]) => [
         k,
@@ -93,18 +113,9 @@ export default function CreateCharacterScreen({ navigation }) {
 
   // Verfügbare Farben für aktuelle Klasse
   const availableColors = useMemo(() => {
-    const base = classColors[selectedClass] || {};
+    const base = CLASS_COLORS[selectedClass] || {};
     return Object.fromEntries(
-      Object.entries(base).map(([k, v]) => [
-        k,
-        Array.isArray(v)
-          ? v
-          : uniq(
-              Object.values(classColors)
-                .map((cls) => cls[k])
-                .filter(Boolean)
-            ),
-      ])
+      Object.entries(base).map(([k, v]) => [k, Array.isArray(v) ? v : [v]])
     );
   }, [selectedClass]);
 

@@ -10,6 +10,7 @@ import {
   LinearGradient,
   Stop,
 } from "react-native-svg";
+import defaultColors from "../data/berserkerColors"; // 🎨 externe Farb-Defaults
 
 // =========================================================
 // 🔧 Gradient-Helfer
@@ -52,13 +53,13 @@ const DEFAULT_SWORD = {
 // 🪓 Berserker
 // =========================================================
 export default function Berserker({
-  // === Farben ===
-  skin = "#F2C29B",
-  armorColors = ["#2ECC71", "#27AE60"],
-  helmetColors = ["#FFD700", "#FFA000"],
-  greatswordBladeColors = ["#B0BEC5", "#ECEFF1"],
-  gripColors = ["#444444", "#222222"],
-  outlineColor = "#222222",
+  // 🎨 Farben → mit Fallbacks
+  skin = defaultColors.skin,
+  armorColors = defaultColors.armor,
+  helmetColors = defaultColors.helmet,
+  greatswordBladeColors = defaultColors.greatswordBlade,
+  gripColors = defaultColors.grip,
+  outlineColors = defaultColors.outline,
 
   // === Größen / Positionen (optional überschreiben) ===
   head = DEFAULT_HEAD,
@@ -84,7 +85,7 @@ export default function Berserker({
       <Circle
         {...head}
         fill={skin}
-        stroke={outlineColor}
+        stroke={outlineColors}
         strokeWidth={strokeWidth}
       />
 
@@ -94,7 +95,7 @@ export default function Berserker({
            A${head.r} ${head.r} 0 0 1 ${head.cx + head.r} ${head.cy - 2} 
            L${head.cx - head.r} ${head.cy - 2} Z`}
         fill="url(#berserker-helmet)"
-        stroke={outlineColor}
+        stroke={outlineColors}
         strokeWidth={strokeWidth}
       />
 
@@ -102,7 +103,7 @@ export default function Berserker({
       <Rect
         {...body}
         fill="url(#berserker-armor)"
-        stroke={outlineColor}
+        stroke={outlineColors}
         strokeWidth={strokeWidth}
       />
 
@@ -110,13 +111,13 @@ export default function Berserker({
       <Rect
         {...armLeft}
         fill={skin}
-        stroke={outlineColor}
+        stroke={outlineColors}
         strokeWidth={strokeWidth}
       />
       <Rect
         {...armRight}
         fill={skin}
-        stroke={outlineColor}
+        stroke={outlineColors}
         strokeWidth={strokeWidth}
       />
 
@@ -132,7 +133,7 @@ export default function Berserker({
           height={sword.grip.height}
           rx={sword.grip.rx}
           fill="url(#berserker-grip)"
-          stroke={outlineColor}
+          stroke={outlineColors}
           strokeWidth={strokeWidth * 0.75}
         />
         {/* Parierstange */}
@@ -148,7 +149,7 @@ export default function Berserker({
         <Path
           d={sword.blade}
           fill="url(#berserker-blade)"
-          stroke={outlineColor}
+          stroke={outlineColors}
           strokeWidth={strokeWidth}
         />
       </G>
