@@ -60,6 +60,20 @@ export default function BattleScreen() {
     setBackgroundId(nextBg.id);
   }, []);
 
+  // 🔹 Rewards & Stage-Progress (NACHDEM Enemy tot ist)
+  useEffect(() => {
+    if (enemy && enemyHp <= 0) {
+      addCoins(enemy.goldReward ?? DEFAULT_REWARDS.gold);
+      addCrystals(enemy.crystalReward ?? DEFAULT_REWARDS.crystals);
+      gainXp(enemy.xpReward ?? DEFAULT_REWARDS.xp, () =>
+        setPlayerHp(MAX_PLAYER_HP)
+      );
+
+      setStage((prev) => (prev < TOTAL_STAGES ? prev + 1 : 1));
+      spawnEnemy();
+    }
+  }, [enemyHp, enemy, addCoins, addCrystals, gainXp, spawnEnemy]);
+
   // 🔹 Spieler lädt -> Gegner spawnen
   useEffect(() => {
     if (selectedPlayer) spawnEnemy();
@@ -69,37 +83,12 @@ export default function BattleScreen() {
   const handleStageTap = useCallback(() => {
     if (!enemy) return;
 
-    setEnemyHp((prevHp) => {
-      const newHp = prevHp - PLAYER_DAMAGE;
-
-      if (newHp <= 0) {
-        // Rewards
-        addCoins(enemy.goldReward ?? DEFAULT_REWARDS.gold);
-        addCrystals(enemy.crystalReward ?? DEFAULT_REWARDS.crystals);
-        gainXp(enemy.xpReward ?? DEFAULT_REWARDS.xp, () =>
-          setPlayerHp(MAX_PLAYER_HP)
-        );
-
-        // Stage hochzählen
-        setStage((prev) => (prev < TOTAL_STAGES ? prev + 1 : 1));
-
-        spawnEnemy();
-        return 0;
-      }
-      return newHp;
-    });
+    // Schaden am Gegner
+    setEnemyHp((prevHp) => Math.max(prevHp - PLAYER_DAMAGE, 0));
 
     // Gegenschaden
     setPlayerHp((prev) => Math.max(prev - (enemy?.damage ?? 1), 0));
-  }, [
-    enemy,
-    PLAYER_DAMAGE,
-    addCoins,
-    addCrystals,
-    gainXp,
-    spawnEnemy,
-    MAX_PLAYER_HP,
-  ]);
+  }, [enemy, PLAYER_DAMAGE]);
 
   // 🔹 Kein Spieler ausgewählt
   if (!selectedPlayer) {
