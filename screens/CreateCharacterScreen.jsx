@@ -6,10 +6,9 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  ScrollView,
-  FlatList,
   Alert,
 } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import Player from "../components/Player";
 import playersData from "../data/players.json";
 import { usePlayers } from "../context/PlayerContext";
@@ -69,13 +68,13 @@ const ColorSwatch = React.memo(function ColorSwatch({
       style={[
         styles.colorBox,
         { backgroundColor: bg, borderColor: border },
-        selected && styles.colorBoxSelected,
+        selected === color && styles.colorBoxSelected,
       ]}
     />
   );
 });
 
-// 🔧 Accordion-Section
+// 🔧 Accordion-Section mit FlashList Grid
 const ColorSection = React.memo(function ColorSection({
   label,
   colors,
@@ -83,6 +82,25 @@ const ColorSection = React.memo(function ColorSection({
   onSelect,
 }) {
   const [open, setOpen] = useState(false);
+
+  // Für Gridhöhe (max 240px -> eigener Scroll in der Section)
+  const numColumns = 8;
+  const itemSize = 42; // Kachel + Margin
+  const rows = Math.ceil(colors.length / numColumns);
+  const gridHeight = Math.min(rows * itemSize, 240);
+
+  const keyExtractor = useCallback((_, idx) => `${label}-${idx}`, [label]);
+
+  const renderItem = useCallback(
+    ({ item }) => (
+      <ColorSwatch
+        color={item}
+        selected={selected}
+        onPress={() => onSelect(item)}
+      />
+    ),
+    [onSelect, selected]
+  );
 
   return (
     <View style={styles.section}>
@@ -95,27 +113,24 @@ const ColorSection = React.memo(function ColorSection({
       </TouchableOpacity>
 
       {open && (
-        <FlatList
-          data={colors}
-          keyExtractor={(_, idx) => `${label}-${idx}`}
-          numColumns={8}
-          scrollEnabled={false}
-          contentContainerStyle={styles.colorGrid}
-          renderItem={({ item }) => (
-            <ColorSwatch
-              color={item}
-              selected={selected === item}
-              onPress={() => onSelect(item)}
-            />
-          )}
-        />
+        <View style={{ height: gridHeight }}>
+          <FlashList
+            data={colors}
+            keyExtractor={keyExtractor}
+            renderItem={renderItem}
+            estimatedItemSize={itemSize}
+            numColumns={numColumns}
+            contentContainerStyle={styles.colorGrid}
+            showsVerticalScrollIndicator={false}
+          />
+        </View>
       )}
     </View>
   );
 });
 
 // 🔧 Klassen-Button
-function ClassButton({ cls, active, onPress }) {
+const ClassButton = React.memo(function ClassButton({ cls, active, onPress }) {
   return (
     <TouchableOpacity
       style={[styles.classBtn, active && styles.classBtnActive]}
@@ -126,7 +141,7 @@ function ClassButton({ cls, active, onPress }) {
       </Text>
     </TouchableOpacity>
   );
-}
+});
 
 export default function CreateCharacterScreen({ navigation }) {
   const { players, addPlayer } = usePlayers();
@@ -147,13 +162,16 @@ export default function CreateCharacterScreen({ navigation }) {
     buildSpriteDefaults(selectedClass)
   );
 
-  const handleClassChange = (cls) => {
-    setSelectedClass(cls);
-    setSprite(buildSpriteDefaults(cls));
-  };
+  const handleClassChange = useCallback(
+    (cls) => {
+      setSelectedClass(cls);
+      setSprite(buildSpriteDefaults(cls));
+    },
+    [buildSpriteDefaults]
+  );
 
   // 🎲 Zufallsgenerator
-  const handleRandomize = () => {
+  const handleRandomize = useCallback(() => {
     const cls = randomOf(allClasses);
     const base = CLASS_COLORS[cls] || {};
     const randomSprite = Object.fromEntries(
@@ -166,9 +184,9 @@ export default function CreateCharacterScreen({ navigation }) {
     setSelectedClass(cls);
     setSprite(randomSprite);
     setName(randomOf(RANDOM_NAMES));
-  };
+  }, [allClasses]);
 
-  // Verfügbare Farben
+  // Verfügbare Farben (Arrays erzwingen)
   const availableColors = useMemo(() => {
     const base = CLASS_COLORS[selectedClass] || {};
     return Object.fromEntries(
@@ -177,18 +195,22 @@ export default function CreateCharacterScreen({ navigation }) {
   }, [selectedClass]);
 
   const updateSprite = useCallback(
-    (k, v) => setSprite((prev) => ({ ...prev, [k]: v })),
+    (k, v) => setSprite((prev) => (prev[k] === v ? prev : { ...prev, [k]: v })),
     []
   );
 
   // ✅ Speichern
-  const handleSave = async () => {
+  const handleSave = useCallback(async () => {
     const trimmed = name.trim();
-    if (trimmed.length < 2)
-      return Alert.alert("❌ Fehler", "Name muss mindestens 2 Zeichen haben.");
+    if (trimmed.length < 2) {
+      Alert.alert("❌ Fehler", "Name muss mindestens 2 Zeichen haben.");
+      return;
+    }
 
-    if (players.some((p) => p.name?.toLowerCase() === trimmed.toLowerCase()))
-      return Alert.alert("⚠️ Name belegt", "Bitte wähle einen anderen Namen.");
+    if (players.some((p) => p.name?.toLowerCase() === trimmed.toLowerCase())) {
+      Alert.alert("⚠️ Name belegt", "Bitte wähle einen anderen Namen.");
+      return;
+    }
 
     try {
       const newPlayer = {
@@ -213,80 +235,127 @@ export default function CreateCharacterScreen({ navigation }) {
         "Der Charakter konnte nicht gespeichert werden."
       );
     }
-  };
+  }, [addPlayer, name, players, selectedClass, sprite, navigation]);
+
+  // ======= UI =======
+  const classKeyExtractor = useCallback((item) => `cls-${item}`, []);
+  const renderClassItem = useCallback(
+    ({ item }) => (
+      <ClassButton
+        cls={item}
+        active={selectedClass === item}
+        onPress={() => handleClassChange(item)}
+      />
+    ),
+    [handleClassChange, selectedClass]
+  );
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.scrollContent}
-    >
-      <Text style={styles.title}>Neuen Charakter erstellen</Text>
-
-      {/* 🎲 Zufällig */}
-      <TouchableOpacity style={styles.randomBtn} onPress={handleRandomize}>
-        <Text style={styles.randomText}>🎲 Zufälliger Charakter</Text>
-      </TouchableOpacity>
-
-      {/* Vorschau */}
-      <View style={styles.preview}>
-        <Player size={120} sprite={sprite} playerClass={selectedClass} />
-      </View>
-
-      {/* Name */}
-      <Text style={styles.label}>Name:</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Charaktername"
-        placeholderTextColor="#999"
-        value={name}
-        onChangeText={setName}
-        autoCapitalize="words"
-        maxLength={20}
-      />
-
-      {/* Klassen-Auswahl */}
-      <Text style={styles.label}>Klasse:</Text>
-      <View style={styles.classList}>
-        {allClasses.map((cls) => (
-          <ClassButton
-            key={cls}
-            cls={cls}
-            active={selectedClass === cls}
-            onPress={() => handleClassChange(cls)}
-          />
-        ))}
-      </View>
-
-      {/* Farbauswahl */}
-      {Object.entries(availableColors).map(([key, colors]) =>
-        colors?.length ? (
-          <ColorSection
-            key={key}
-            label={key}
-            colors={colors}
-            selected={sprite[key]}
-            onSelect={(c) => updateSprite(key, c)}
-          />
-        ) : null
-      )}
-
-      {/* Speichern */}
-      <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-        <Text style={styles.saveText}>Charakter erstellen</Text>
-      </TouchableOpacity>
-    </ScrollView>
+    <FlashList
+      data={[
+        { type: "header" },
+        { type: "random" },
+        { type: "preview" },
+        { type: "name" },
+        { type: "classes" },
+        ...Object.entries(availableColors).map(([key, colors]) => ({
+          type: "colors",
+          key,
+          colors,
+        })),
+        { type: "save" },
+      ]}
+      estimatedItemSize={120}
+      keyExtractor={(item, idx) =>
+        item.type === "colors" ? `sec-${item.key}` : `${item.type}-${idx}`
+      }
+      renderItem={({ item }) => {
+        switch (item.type) {
+          case "header":
+            return <Text style={styles.title}>Neuen Charakter erstellen</Text>;
+          case "random":
+            return (
+              <TouchableOpacity
+                style={styles.randomBtn}
+                onPress={handleRandomize}
+              >
+                <Text style={styles.randomText}>🎲 Zufälliger Charakter</Text>
+              </TouchableOpacity>
+            );
+          case "preview":
+            return (
+              <View style={styles.preview}>
+                <Player
+                  size={120}
+                  sprite={sprite}
+                  playerClass={selectedClass}
+                />
+              </View>
+            );
+          case "name":
+            return (
+              <View>
+                <Text style={styles.label}>Name:</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Charaktername"
+                  placeholderTextColor="#999"
+                  value={name}
+                  onChangeText={setName}
+                  autoCapitalize="words"
+                  maxLength={20}
+                />
+              </View>
+            );
+          case "classes":
+            return (
+              <View>
+                <Text style={styles.label}>Klasse:</Text>
+                <FlashList
+                  data={allClasses}
+                  keyExtractor={classKeyExtractor}
+                  renderItem={renderClassItem}
+                  estimatedItemSize={44}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.classList}
+                />
+              </View>
+            );
+          case "colors":
+            return (
+              <ColorSection
+                label={item.key}
+                colors={item.colors}
+                selected={sprite[item.key]}
+                onSelect={(c) => updateSprite(item.key, c)}
+              />
+            );
+          case "save":
+            return (
+              <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
+                <Text style={styles.saveText}>Charakter erstellen</Text>
+              </TouchableOpacity>
+            );
+          default:
+            return null;
+        }
+      }}
+      contentContainerStyle={styles.listContent}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0f1220" },
-  scrollContent: { padding: 20, paddingBottom: 40 },
+  container: { flex: 1, backgroundColor: "#0f1220" }, // nicht mehr direkt benutzt
+  listContent: { padding: 20, paddingBottom: 40, backgroundColor: "#0f1220" },
+
   preview: { alignItems: "center", marginVertical: 20 },
   title: {
     color: "#fff",
     fontSize: 24,
     textAlign: "center",
-    marginBottom: 20,
+    marginBottom: 12,
     fontWeight: "600",
   },
   label: { color: "#fff", marginTop: 16, marginBottom: 6, fontSize: 16 },
@@ -316,13 +385,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#272b45",
   },
-  classList: { flexDirection: "row", flexWrap: "wrap" },
+
+  classList: { paddingVertical: 4 },
   classBtn: {
     backgroundColor: "#1a1d2e",
     paddingVertical: 8,
     paddingHorizontal: 10,
     borderRadius: 10,
-    margin: 4,
+    marginRight: 8,
     borderWidth: 1,
     borderColor: "#272b45",
   },
@@ -330,7 +400,7 @@ const styles = StyleSheet.create({
   classBtnText: { color: "#fff", fontWeight: "600" },
   classBtnTextActive: { color: "#222" },
 
-  colorGrid: { marginTop: 8, justifyContent: "flex-start" },
+  colorGrid: { paddingTop: 8 },
   colorBox: {
     width: 32,
     height: 32,
