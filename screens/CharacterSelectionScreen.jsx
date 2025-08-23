@@ -1,162 +1,161 @@
 // src/screens/CharacterSelectionScreen.jsx
-import React, { useState, useCallback } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  FlatList,
-  Alert,
-} from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import React, { useCallback } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import { FlashList } from "@shopify/flash-list";
+import { usePlayers } from "../context/PlayerContext";
 import { useSelectedPlayer } from "../context/SelectedPlayerContext";
-import { usePlayers } from "../context/PlayerContext"; // ⬅️ globaler Context
 import Player from "../components/Player";
 
-export default function CharacterSelectionScreen() {
-  const navigation = useNavigation();
-  const { setSelectedPlayer } = useSelectedPlayer();
-  const { players } = usePlayers(); // ⬅️ direkt aus Context
-  const [selectedId, setSelectedId] = useState(null);
+export default function CharacterSelectionScreen({ navigation }) {
+  const { players, setPlayers } = usePlayers();
+  const { selectedPlayer, setSelectedPlayer } = useSelectedPlayer();
 
-  // ✅ "Enter World"
-  const handleStart = () => {
-    const player = players.find((p) => p.id === selectedId);
-    if (!player) {
-      return Alert.alert(
-        "❌ Kein Charakter",
-        "Bitte wähle zuerst einen Charakter aus."
-      );
-    }
-    setSelectedPlayer(player);
-    navigation.navigate("BattleScreen");
-  };
+  // Spieler auswählen
+  const handleSelect = useCallback(
+    async (player) => {
+      await setSelectedPlayer(player);
+      Alert.alert("✅ Ausgewählt", `${player.name} ist jetzt aktiv!`);
+      navigation.goBack(); // zurück, z. B. ins Hauptmenü
+    },
+    [setSelectedPlayer, navigation]
+  );
 
-  // ✅ "Neuer Charakter"
-  const handleCreateNew = () => navigation.navigate("CreateCharacterScreen");
-
-  // ✅ Player Card
-  const renderPlayerCard = useCallback(
-    ({ item }) => {
-      const isActive = item.id === selectedId;
-      return (
-        <TouchableOpacity
-          style={[styles.card, isActive && styles.cardActive]}
-          onPress={() => setSelectedId(item.id)}
-          activeOpacity={0.85}
-        >
-          {/* Dynamisches Sprite */}
-          <Player size={100} playerClass={item.class} sprite={item.sprite} />
-
-          {/* Infos */}
-          <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.details}>
-            {item.class} | Level {item.level}
-          </Text>
-          <Text style={styles.stats}>
-            ❤️ {item.hp.current}/{item.hp.max} | 💰 {item.gold}
-          </Text>
-        </TouchableOpacity>
+  // Spieler löschen
+  const handleDelete = useCallback(
+    (id) => {
+      Alert.alert(
+        "⚠️ Spieler löschen",
+        "Willst du diesen Charakter wirklich löschen?",
+        [
+          { text: "Abbrechen", style: "cancel" },
+          {
+            text: "Löschen",
+            style: "destructive",
+            onPress: () => {
+              setPlayers((prev) => prev.filter((p) => p.id !== id));
+            },
+          },
+        ]
       );
     },
-    [selectedId]
+    [setPlayers]
+  );
+
+  // Render Item
+  const renderItem = useCallback(
+    ({ item }) => {
+      const isActive = selectedPlayer?.id === item.id;
+
+      return (
+        <View style={[styles.card, isActive && styles.cardActive]}>
+          <Player size={100} sprite={item.sprite} playerClass={item.class} />
+          <Text style={styles.name}>
+            {item.name} (Lvl {item.level})
+          </Text>
+          <Text style={styles.class}>{item.class}</Text>
+
+          <View style={styles.actions}>
+            <TouchableOpacity
+              style={[styles.btn, styles.btnSelect]}
+              onPress={() => handleSelect(item)}
+            >
+              <Text style={styles.btnText}>
+                {isActive ? "Aktiv" : "Auswählen"}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.btn, styles.btnDelete]}
+              onPress={() => handleDelete(item.id)}
+            >
+              <Text style={styles.btnText}>Löschen</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      );
+    },
+    [selectedPlayer, handleSelect, handleDelete]
   );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Charakter auswählen</Text>
-
-      <FlatList
+      <Text style={styles.title}>Charakterauswahl</Text>
+      <FlashList
         data={players}
         keyExtractor={(item) => item.id}
-        renderItem={renderPlayerCard}
-        horizontal
-        contentContainerStyle={styles.listContent}
-        showsHorizontalScrollIndicator={false}
+        renderItem={renderItem}
+        estimatedItemSize={150}
+        contentContainerStyle={styles.list}
         ListEmptyComponent={
-          <View style={styles.emptyBox}>
-            <Text style={styles.emptyText}>Keine Charaktere gefunden</Text>
-            <TouchableOpacity
-              style={[styles.mainBtn, { backgroundColor: "#2196F3" }]}
-              onPress={handleCreateNew}
-              activeOpacity={0.9}
-            >
-              <Text style={styles.mainBtnText}>
-                + Neuen Charakter erstellen
-              </Text>
-            </TouchableOpacity>
-          </View>
+          <Text style={styles.empty}>⚠️ Noch keine Charaktere erstellt.</Text>
         }
       />
 
-      {/* Buttons */}
-      {players.length > 0 && (
-        <>
-          <TouchableOpacity
-            style={[styles.mainBtn, { backgroundColor: "#4CAF50" }]}
-            onPress={handleStart}
-            activeOpacity={0.9}
-          >
-            <Text style={styles.mainBtnText}>Enter World</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.mainBtn, { backgroundColor: "#2196F3" }]}
-            onPress={handleCreateNew}
-            activeOpacity={0.9}
-          >
-            <Text style={styles.mainBtnText}>+ Neuer Charakter</Text>
-          </TouchableOpacity>
-        </>
-      )}
+      {/* Button: Neuen Charakter erstellen */}
+      <TouchableOpacity
+        style={styles.createBtn}
+        onPress={() => navigation.navigate("CreateCharacterScreen")}
+      >
+        <Text style={styles.createText}>➕ Neuen Charakter erstellen</Text>
+      </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0f1220", paddingTop: 40 },
+  container: { flex: 1, backgroundColor: "#0f1220", padding: 16 },
   title: {
-    color: "#fff",
     fontSize: 24,
+    fontWeight: "700",
+    color: "#fff",
     textAlign: "center",
-    marginBottom: 20,
-    fontWeight: "600",
+    marginVertical: 12,
   },
-  listContent: { paddingHorizontal: 10 },
+  list: { paddingBottom: 100 },
+
   card: {
     backgroundColor: "#1a1d2e",
-    borderRadius: 14,
-    padding: 12,
-    marginHorizontal: 8,
+    borderRadius: 12,
+    padding: 16,
+    marginVertical: 8,
     alignItems: "center",
     borderWidth: 2,
-    borderColor: "transparent",
-    width: 160,
-    transform: [{ scale: 0.96 }],
+    borderColor: "#272b45",
   },
   cardActive: {
     borderColor: "#FFD700",
-    transform: [{ scale: 1 }],
+    shadowColor: "#FFD700",
+    shadowOpacity: 0.8,
+    shadowRadius: 8,
   },
-  name: { color: "#fff", fontSize: 16, marginTop: 8, fontWeight: "600" },
-  details: { color: "#aaa", fontSize: 14 },
-  stats: { color: "#888", fontSize: 13, marginTop: 4 },
-  mainBtn: {
+  name: { color: "#fff", fontSize: 18, fontWeight: "600", marginTop: 8 },
+  class: { color: "#aaa", fontSize: 14, marginBottom: 8 },
+
+  actions: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 10,
+  },
+  btn: {
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+  },
+  btnSelect: { backgroundColor: "#4CAF50" },
+  btnDelete: { backgroundColor: "#e74c3c" },
+  btnText: { color: "#fff", fontWeight: "700" },
+
+  createBtn: {
+    backgroundColor: "#2196F3",
     paddingVertical: 14,
-    borderRadius: 10,
-    marginHorizontal: 95,
-    marginTop: 20,
+    borderRadius: 12,
+    marginTop: 12,
   },
-  mainBtnText: {
+  createText: {
     color: "#fff",
-    fontSize: 16,
     textAlign: "center",
+    fontSize: 16,
     fontWeight: "700",
   },
-  emptyBox: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  emptyText: { color: "#aaa", fontSize: 16, marginBottom: 20 },
+  empty: { color: "#aaa", textAlign: "center", marginTop: 40, fontSize: 16 },
 });

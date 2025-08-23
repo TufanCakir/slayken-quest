@@ -12,6 +12,7 @@ import { FlashList } from "@shopify/flash-list";
 import Player from "../components/Player";
 import playersData from "../data/players.json";
 import { usePlayers } from "../context/PlayerContext";
+import { useSelectedPlayer } from "../context/SelectedPlayerContext";
 
 // 🎨 Farbsets
 import berserkerColors from "../data/berserkerColors";
@@ -52,12 +53,8 @@ const RANDOM_NAMES = [
   "Morrik",
 ];
 
-// 🔧 Farb-Swatch
-const ColorSwatch = React.memo(function ColorSwatch({
-  color,
-  selected,
-  onPress,
-}) {
+// 🎨 Farb-Swatch
+const ColorSwatch = React.memo(({ color, selected, onPress }) => {
   const [bg, border] = Array.isArray(color)
     ? [color[0], color[color.length - 1]]
     : [color, "#444"];
@@ -74,18 +71,12 @@ const ColorSwatch = React.memo(function ColorSwatch({
   );
 });
 
-// 🔧 Accordion-Section mit FlashList Grid
-const ColorSection = React.memo(function ColorSection({
-  label,
-  colors,
-  selected,
-  onSelect,
-}) {
+// 🎨 Farb-Section mit Accordion
+const ColorSection = React.memo(({ label, colors, selected, onSelect }) => {
   const [open, setOpen] = useState(false);
 
-  // Für Gridhöhe (max 240px -> eigener Scroll in der Section)
   const numColumns = 8;
-  const itemSize = 42; // Kachel + Margin
+  const itemSize = 42;
   const rows = Math.ceil(colors.length / numColumns);
   const gridHeight = Math.min(rows * itemSize, 240);
 
@@ -129,22 +120,22 @@ const ColorSection = React.memo(function ColorSection({
   );
 });
 
-// 🔧 Klassen-Button
-const ClassButton = React.memo(function ClassButton({ cls, active, onPress }) {
-  return (
-    <TouchableOpacity
-      style={[styles.classBtn, active && styles.classBtnActive]}
-      onPress={onPress}
-    >
-      <Text style={[styles.classBtnText, active && styles.classBtnTextActive]}>
-        {cls}
-      </Text>
-    </TouchableOpacity>
-  );
-});
+// 🛡️ Klassen-Button
+const ClassButton = React.memo(({ cls, active, onPress }) => (
+  <TouchableOpacity
+    style={[styles.classBtn, active && styles.classBtnActive]}
+    onPress={onPress}
+  >
+    <Text style={[styles.classBtnText, active && styles.classBtnTextActive]}>
+      {cls}
+    </Text>
+  </TouchableOpacity>
+));
 
 export default function CreateCharacterScreen({ navigation }) {
   const { players, addPlayer } = usePlayers();
+  const { setSelectedPlayer } = useSelectedPlayer();
+
   const allClasses = useMemo(() => uniq(playersData.map((p) => p.class)), []);
 
   const [name, setName] = useState("");
@@ -170,7 +161,7 @@ export default function CreateCharacterScreen({ navigation }) {
     [buildSpriteDefaults]
   );
 
-  // 🎲 Zufallsgenerator
+  // 🎲 Zufalls-Generator
   const handleRandomize = useCallback(() => {
     const cls = randomOf(allClasses);
     const base = CLASS_COLORS[cls] || {};
@@ -186,7 +177,7 @@ export default function CreateCharacterScreen({ navigation }) {
     setName(randomOf(RANDOM_NAMES));
   }, [allClasses]);
 
-  // Verfügbare Farben (Arrays erzwingen)
+  // Farben
   const availableColors = useMemo(() => {
     const base = CLASS_COLORS[selectedClass] || {};
     return Object.fromEntries(
@@ -226,18 +217,28 @@ export default function CreateCharacterScreen({ navigation }) {
       };
 
       await addPlayer(newPlayer);
+      await setSelectedPlayer(newPlayer); // Direkt aktiv setzen
+
       Alert.alert("✅ Erfolg", `${trimmed} wurde erstellt!`);
       navigation.goBack();
     } catch (err) {
-      console.warn("Fehler beim Speichern:", err);
+      console.error("❌ Fehler beim Speichern:", err);
       Alert.alert(
         "❌ Fehler",
         "Der Charakter konnte nicht gespeichert werden."
       );
     }
-  }, [addPlayer, name, players, selectedClass, sprite, navigation]);
+  }, [
+    addPlayer,
+    setSelectedPlayer,
+    name,
+    players,
+    selectedClass,
+    sprite,
+    navigation,
+  ]);
 
-  // ======= UI =======
+  // ===== UI =====
   const classKeyExtractor = useCallback((item) => `cls-${item}`, []);
   const renderClassItem = useCallback(
     ({ item }) => (
@@ -347,7 +348,7 @@ export default function CreateCharacterScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0f1220" }, // nicht mehr direkt benutzt
+  container: { flex: 1, backgroundColor: "#0f1220" },
   listContent: { padding: 20, paddingBottom: 40, backgroundColor: "#0f1220" },
 
   preview: { alignItems: "center", marginVertical: 20 },
@@ -428,6 +429,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "800",
   },
+
   randomBtn: {
     backgroundColor: "#2196F3",
     paddingVertical: 12,

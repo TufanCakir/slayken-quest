@@ -1,134 +1,14 @@
 [
   {
-    "id": "enemy_001",
-    "name": "Goblin Raider",
+    "id": "slime",
+    "name": "Green Slime",
     "element": "earth",
-    "hp": 50,
-    "attack": 5,
+    "hp": 30,
+    "attack": 3,
     "sprite": {
-      "skin": "#8BC34A",
-      "armorColor": "#33691E",
-      "helmetColor": "#558B2F"
-    }
-  },
-  {
-    "id": "enemy_002",
-    "name": "Skeleton Warrior",
-    "element": "night",
-    "hp": 80,
-    "attack": 8,
-    "sprite": {
-      "skin": "#E0E0E0",
-      "armorColor": "#424242",
-      "helmetColor": "#9E9E9E"
-    }
-  },
-  {
-    "id": "enemy_003",
-    "name": "Dark Mage",
-    "element": "night",
-    "hp": 60,
-    "attack": 10,
-    "sprite": {
-      "skin": "#B39DDB",
-      "armorColor": "#512DA8",
-      "helmetColor": "#311B92"
-    }
-  },
-  {
-    "id": "enemy_fire_001",
-    "name": "Flame Imp",
-    "element": "fire",
-    "hp": 55,
-    "attack": 9,
-    "sprite": {
-      "skin": "#FF7043",
-      "armorColor": "#BF360C",
-      "helmetColor": "#E64A19"
-    }
-  },
-  {
-    "id": "enemy_fire_002",
-    "name": "Lava Golem",
-    "element": "fire",
-    "hp": 120,
-    "attack": 15,
-    "sprite": {
-      "skin": "#FF8A65",
-      "armorColor": "#4E342E",
-      "helmetColor": "#D84315"
-    }
-  },
-  {
-    "id": "enemy_ice_001",
-    "name": "Frost Wolf",
-    "element": "ice",
-    "hp": 70,
-    "attack": 7,
-    "sprite": {
-      "skin": "#B3E5FC",
-      "armorColor": "#01579B",
-      "helmetColor": "#0288D1"
-    }
-  },
-  {
-    "id": "enemy_ice_002",
-    "name": "Ice Elemental",
-    "element": "ice",
-    "hp": 100,
-    "attack": 12,
-    "sprite": {
-      "skin": "#81D4FA",
-      "armorColor": "#0277BD",
-      "helmetColor": "#039BE5"
-    }
-  },
-  {
-    "id": "enemy_wind_001",
-    "name": "Storm Harpy",
-    "element": "wind",
-    "hp": 65,
-    "attack": 9,
-    "sprite": {
-      "skin": "#AED581",
-      "armorColor": "#33691E",
-      "helmetColor": "#689F38"
-    }
-  },
-  {
-    "id": "enemy_wind_002",
-    "name": "Sky Serpent",
-    "element": "wind",
-    "hp": 90,
-    "attack": 14,
-    "sprite": {
-      "skin": "#C5E1A5",
-      "armorColor": "#558B2F",
-      "helmetColor": "#8BC34A"
-    }
-  },
-  {
-    "id": "enemy_earth_001",
-    "name": "Stone Guardian",
-    "element": "earth",
-    "hp": 110,
-    "attack": 13,
-    "sprite": {
-      "skin": "#A1887F",
-      "armorColor": "#4E342E",
-      "helmetColor": "#6D4C41"
-    }
-  },
-  {
-    "id": "enemy_earth_002",
-    "name": "Cave Troll",
-    "element": "earth",
-    "hp": 95,
-    "attack": 11,
-    "sprite": {
-      "skin": "#8D6E63",
-      "armorColor": "#3E2723",
-      "helmetColor": "#5D4037"
+      "skin": "#AEEA00",
+      "armorColor": "#689F38",
+      "helmetColor": "#33691E"
     }
   }
 ]

@@ -1,12 +1,18 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+// src/context/PlayerContext.jsx
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { gainXp } from "../utils/levelSystem";
 import initialPlayers from "../data/players.json";
 
-// 🔥 Context erstellen
-const PlayerContext = createContext();
+const STORAGE_KEY = "@players"; // 🔑 Einheitlicher Key
+const PlayerContext = createContext(null);
 
-// 🧩 Provider
 export function PlayerProvider({ children }) {
   const [players, setPlayers] = useState(initialPlayers);
 
@@ -14,8 +20,12 @@ export function PlayerProvider({ children }) {
   useEffect(() => {
     (async () => {
       try {
-        const saved = await AsyncStorage.getItem("players");
-        if (saved) setPlayers(JSON.parse(saved));
+        const saved = await AsyncStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          setPlayers(JSON.parse(saved));
+        } else {
+          setPlayers(initialPlayers);
+        }
       } catch (err) {
         console.error("❌ Fehler beim Laden der Spieler:", err);
       }
@@ -26,31 +36,56 @@ export function PlayerProvider({ children }) {
   useEffect(() => {
     (async () => {
       try {
-        await AsyncStorage.setItem("players", JSON.stringify(players));
+        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(players));
       } catch (err) {
         console.error("❌ Fehler beim Speichern der Spieler:", err);
       }
     })();
   }, [players]);
 
-  // === Character XP geben ===
-  const addXp = (id, amount) => {
-    setPlayers((prev) =>
-      prev.map((p) => (p.id === id ? gainXp(p, amount) : p))
-    );
-  };
+  // === Spieler hinzufügen ===
+  const addPlayer = useCallback(
+    (player) => {
+      setPlayers((prev) => [...prev, player]);
+    },
+    [setPlayers]
+  );
 
-  // === Character zurücksetzen ===
-  const resetPlayer = (id) => {
-    setPlayers((prev) =>
-      prev.map((p) =>
-        p.id === id ? { ...p, level: 1, xp: 0, xpToNextLevel: 100 } : p
-      )
-    );
-  };
+  // === XP hinzufügen ===
+  const addXp = useCallback(
+    (id, amount) => {
+      setPlayers((prev) =>
+        prev.map((p) => (p.id === id ? gainXp(p, amount) : p))
+      );
+    },
+    [setPlayers]
+  );
+
+  // === Spieler zurücksetzen ===
+  const resetPlayer = useCallback(
+    (id) => {
+      setPlayers((prev) =>
+        prev.map((p) =>
+          p.id === id
+            ? {
+                ...p,
+                level: 1,
+                xp: 0,
+                xpToNextLevel: 100,
+                gold: 0,
+                hp: { current: 100, max: 100 },
+              }
+            : p
+        )
+      );
+    },
+    [setPlayers]
+  );
 
   return (
-    <PlayerContext.Provider value={{ players, setPlayers, addXp, resetPlayer }}>
+    <PlayerContext.Provider
+      value={{ players, setPlayers, addPlayer, addXp, resetPlayer }}
+    >
       {children}
     </PlayerContext.Provider>
   );
@@ -58,5 +93,11 @@ export function PlayerProvider({ children }) {
 
 // 🔧 Custom Hook
 export function usePlayers() {
-  return useContext(PlayerContext);
+  const ctx = useContext(PlayerContext);
+  if (!ctx) {
+    throw new Error(
+      "usePlayers muss innerhalb von PlayerProvider verwendet werden."
+    );
+  }
+  return ctx;
 }

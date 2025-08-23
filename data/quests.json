@@ -1,22 +1,38 @@
 [
   {
-    "id": "quest-1",
-    "title": "Besiege 5 Gegner",
-    "description": "Gewinne 5 Kämpfe, um eine Belohnung zu erhalten.",
-    "progress": 0,
-    "goal": 5,
-    "reward": { "coins": 50, "xp": 100 },
-    "completed": false,
-    "claimed": false
+    "id": "q_kill_slimes_10",
+    "title": "Schleim-Jäger I",
+    "description": "Besiege 10 Schleime.",
+    "type": "kills",
+    "target": { "enemyId": "slime", "count": 10 },
+    "rewards": { "xp": 80, "gold": 50, "crystals": 2 },
+    "requiresLevel": 1
   },
   {
-    "id": "quest-2",
-    "title": "Sammle 100 Gold",
-    "description": "Verdiene insgesamt 100 Gold in Kämpfen.",
-    "progress": 0,
-    "goal": 100,
-    "reward": { "crystals": 5 },
-    "completed": false,
-    "claimed": false
+    "id": "q_win_stages_3",
+    "title": "Erste Schritte",
+    "description": "Gewinne 3 Kämpfe.",
+    "type": "wins",
+    "target": { "count": 3 },
+    "rewards": { "xp": 120, "gold": 75, "crystals": 3 },
+    "requiresLevel": 1
+  },
+  {
+    "id": "q_reach_lvl_5",
+    "title": "Auf dem Weg",
+    "description": "Erreiche Level 5 mit deinem Helden.",
+    "type": "reach_level",
+    "target": { "level": 5 },
+    "rewards": { "xp": 200, "gold": 100, "crystals": 5 },
+    "requiresLevel": 1
+  },
+  {
+    "id": "q_collect_crystals_20",
+    "title": "Kristall-Sammler",
+    "description": "Sammle 20 Kristalle durch Kämpfe.",
+    "type": "collect_crystals",
+    "target": { "count": 20 },
+    "rewards": { "xp": 150, "gold": 60, "crystals": 0 },
+    "requiresLevel": 1
   }
 ]

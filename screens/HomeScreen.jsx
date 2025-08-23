@@ -19,6 +19,7 @@ export default function HomeScreen() {
     { id: "1", title: "Charakter Auswahl", screen: "CharacterSelectionScreen" },
     { id: "2", title: "Charakter erstellen", screen: "CreateCharacterScreen" },
     { id: "3", title: "Einstellungen", screen: "SettingsScreen" },
+    { id: "4", title: "Kampf", screen: "BattleScreen" },
     // Weitere Buttons einfach hier hinzufügen...
     // { id: "4", title: "Game Start", screen: "GameScreen" },
   ];

@@ -1,10 +1,6 @@
 import { View, TouchableOpacity, Text } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import {
-  Ionicons,
-  FontAwesome6,
-  MaterialCommunityIcons,
-} from "@expo/vector-icons";
+import { Ionicons, FontAwesome6, FontAwesome5 } from "@expo/vector-icons";
 import styles from "../styles/FooterStyles";
 
 const Footer = () => {
@@ -19,21 +15,21 @@ const Footer = () => {
     },
     {
       iconSet: FontAwesome6,
-      iconName: "add",
-      label: "Add",
-      screen: "BattleScreen",
-    },
-    {
-      iconSet: MaterialCommunityIcons,
-      iconName: "face-man-profile",
-      label: "Profile",
+      iconName: "people-arrows",
+      label: "Create",
       screen: "CreateCharacterScreen",
     },
     {
-      iconSet: Ionicons,
-      iconName: "settings-outline",
-      label: "Settings",
+      iconSet: FontAwesome6,
+      iconName: "people-roof",
+      label: "Selection",
       screen: "CharacterSelectionScreen",
+    },
+    {
+      iconSet: FontAwesome5,
+      iconName: "question-circle",
+      label: "Quest",
+      screen: "QuestScreen",
     },
   ];
 

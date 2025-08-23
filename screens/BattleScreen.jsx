@@ -22,6 +22,7 @@ import BattleBackground from "../components/BattleBackground";
 import StageProgress from "../components/StageProgress";
 import AutoPlay from "../components/AutoPlay";
 import { usePlayers } from "../context/PlayerContext";
+import { useQuests } from "../context/QuestContext";
 
 const { width, height } = Dimensions.get("window");
 const CENTER_X = width / 2;
@@ -36,8 +37,9 @@ export default function BattleScreen() {
   const { addCoins } = useCoins();
   const { addCrystals } = useCrystals();
   const { players, addXp, resetPlayer } = usePlayers();
+  const { incrementKill, incrementWin, addCrystalsFromBattle } = useQuests();
 
-  // 🎯 Aktueller Spieler aus PlayerContext
+  // 🎯 Aktueller Spieler
   const activePlayer = players.find((p) => p.id === selectedPlayer?.id);
 
   const MAX_PLAYER_HP = activePlayer?.hp?.max ?? 100;
@@ -50,7 +52,7 @@ export default function BattleScreen() {
   const [enemyHp, setEnemyHp] = useState(0);
   const [backgroundId, setBackgroundId] = useState(backgrounds[0].id);
 
-  // 🔹 Neuen Gegner + BG spawnen
+  // 🔹 Gegner + Hintergrund wählen
   const spawnEnemy = useCallback(() => {
     if (!enemiesData.length) return;
     const newEnemy =
@@ -62,32 +64,48 @@ export default function BattleScreen() {
     setBackgroundId(nextBg.id);
   }, []);
 
-  // 🔹 Rewards & Stage-Progress
-  useEffect(() => {
-    if (!enemy || enemyHp > 0 || !activePlayer) return;
+  // 🔹 Wenn Gegner besiegt wird → alles zentral hier
+  const onEnemyDefeated = useCallback(() => {
+    if (!enemy || !activePlayer) return;
 
+    // Rewards
     addCoins(enemy.goldReward ?? DEFAULT_REWARDS.gold);
     addCrystals(enemy.crystalReward ?? DEFAULT_REWARDS.crystals);
     addXp(activePlayer.id, enemy.xpReward ?? DEFAULT_REWARDS.xp);
 
+    // Quests
+    incrementKill(enemy.id);
+    incrementWin();
+    addCrystalsFromBattle(enemy.crystalReward ?? 0);
+
+    // Stage & Reset
     setPlayerHp(MAX_PLAYER_HP);
     setStage((prev) => (prev < TOTAL_STAGES ? prev + 1 : 1));
     spawnEnemy();
   }, [
-    enemyHp,
     enemy,
+    activePlayer,
     addCoins,
     addCrystals,
     addXp,
-    spawnEnemy,
-    activePlayer,
+    incrementKill,
+    incrementWin,
+    addCrystalsFromBattle,
     MAX_PLAYER_HP,
+    spawnEnemy,
   ]);
 
-  // 🔹 Spieler lädt -> Gegner spawnen
+  // 🔹 Trigger, wenn Gegner HP = 0
+  useEffect(() => {
+    if (enemy && enemyHp <= 0) {
+      onEnemyDefeated();
+    }
+  }, [enemyHp, enemy, onEnemyDefeated]);
+
+  // 🔹 Spieler lädt → ersten Gegner spawnen
   useEffect(() => {
     if (selectedPlayer) spawnEnemy();
-  }, [spawnEnemy, selectedPlayer]);
+  }, [selectedPlayer, spawnEnemy]);
 
   // 🔹 Kampf-Logik
   const handleStageTap = useCallback(() => {
