@@ -34,5 +34,14 @@
     "target": { "count": 20 },
     "rewards": { "xp": 150, "gold": 60, "crystals": 0 },
     "requiresLevel": 1
+  },
+  {
+    "id": "q_collect_coins_20",
+    "title": "Münzen-Sammler",
+    "description": "Sammle 20 Münzen durch Kämpfe.",
+    "type": "collect_coins",
+    "target": { "count": 20 },
+    "rewards": { "xp": 150, "gold": 60, "crystals": 0 },
+    "requiresLevel": 1
   }
 ]

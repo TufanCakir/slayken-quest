@@ -78,6 +78,23 @@ export default function BattleScreen() {
     incrementWin();
     addCrystalsFromBattle(enemy.crystalReward ?? 0);
 
+    // 🔹 Einheitliche Rewards berechnen
+    const goldEarned = enemy.goldReward ?? DEFAULT_REWARDS.gold;
+    const crystalsEarned = enemy.crystalReward ?? DEFAULT_REWARDS.crystals;
+    const xpEarned = enemy.xpReward ?? DEFAULT_REWARDS.xp;
+
+    // Rewards an Spieler
+    addCoins(goldEarned);
+    addCrystals(crystalsEarned);
+    addXp(activePlayer.id, xpEarned);
+
+    // Quests updaten
+    incrementKill(enemy.id);
+    incrementWin();
+    if (crystalsEarned > 0) {
+      addCrystalsFromBattle(crystalsEarned);
+    }
+
     // Stage & Reset
     setPlayerHp(MAX_PLAYER_HP);
     setStage((prev) => (prev < TOTAL_STAGES ? prev + 1 : 1));
