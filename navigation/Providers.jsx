@@ -9,6 +9,7 @@ import { PlayerProvider } from "../context/PlayerContext";
 import { SelectedPlayerProvider } from "../context/SelectedPlayerContext";
 import { AccountLevelProvider } from "../context/AccountLevelContext";
 import { QuestProvider } from "../context/QuestContext";
+import { BattleProvider } from "../context/BattleContext";
 
 // 👉 Dein Navigator
 import RootNavigator from "./RootNavigator";
@@ -22,14 +23,16 @@ export default function Providers() {
             <SelectedPlayerProvider>
               <AccountLevelProvider>
                 <QuestProvider>
-                  <SafeAreaView
-                    style={{ flex: 1, backgroundColor: "#0f1220" }}
-                    edges={["top", "bottom"]}
-                  >
-                    <NavigationContainer>
-                      <RootNavigator />
-                    </NavigationContainer>
-                  </SafeAreaView>
+                  <BattleProvider>
+                    <SafeAreaView
+                      style={{ flex: 1, backgroundColor: "#0f1220" }}
+                      edges={["top", "bottom"]}
+                    >
+                      <NavigationContainer>
+                        <RootNavigator />
+                      </NavigationContainer>
+                    </SafeAreaView>
+                  </BattleProvider>
                 </QuestProvider>
               </AccountLevelProvider>
             </SelectedPlayerProvider>

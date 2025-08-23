@@ -43,5 +43,50 @@
     "target": { "count": 20 },
     "rewards": { "xp": 150, "gold": 60, "crystals": 0 },
     "requiresLevel": 1
+  },
+  {
+    "id": "q_kill_vampires_5",
+    "title": "Vampir-Jäger",
+    "description": "Besiege 5 Vampire.",
+    "type": "kills",
+    "target": { "enemyId": "enemy_vampire_001", "count": 5 },
+    "rewards": { "xp": 200, "gold": 100, "crystals": 4 },
+    "requiresLevel": 3
+  },
+  {
+    "id": "q_kill_werewolves_3",
+    "title": "Werwolf-Schlächter",
+    "description": "Besiege 3 Werwölfe.",
+    "type": "kills",
+    "target": { "enemyId": "enemy_werewolf_001", "count": 3 },
+    "rewards": { "xp": 180, "gold": 120, "crystals": 3 },
+    "requiresLevel": 4
+  },
+  {
+    "id": "q_kill_mages_7",
+    "title": "Magier-Bann",
+    "description": "Besiege 7 feindliche Magier.",
+    "type": "kills",
+    "target": { "enemyId": "enemy_mage_001", "count": 7 },
+    "rewards": { "xp": 250, "gold": 130, "crystals": 4 },
+    "requiresLevel": 5
+  },
+  {
+    "id": "q_kill_demon_overlord",
+    "title": "Dämonenfürst",
+    "description": "Besiege den mächtigen Dämonenfürsten.",
+    "type": "kills",
+    "target": { "enemyId": "enemy_demon_002", "count": 1 },
+    "rewards": { "xp": 500, "gold": 300, "crystals": 10 },
+    "requiresLevel": 8
+  },
+  {
+    "id": "q_win_10",
+    "title": "Erfahrener Kämpfer",
+    "description": "Gewinne 10 Kämpfe.",
+    "type": "wins",
+    "target": { "count": 10 },
+    "rewards": { "xp": 300, "gold": 150, "crystals": 5 },
+    "requiresLevel": 2
   }
 ]

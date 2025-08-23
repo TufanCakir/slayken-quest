@@ -1,5 +1,5 @@
 // src/screens/BattleScreen.jsx
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, useMemo, useRef } from "react";
 import {
   View,
   TouchableOpacity,
@@ -7,133 +7,105 @@ import {
   Text,
   Dimensions,
   Button,
+  Animated,
 } from "react-native";
+
 import { useSelectedPlayer } from "../context/SelectedPlayerContext";
+import { useBattle } from "../context/BattleContext";
+import { useCoins } from "../context/CoinsContext";
+import { useCrystals } from "../context/CrystalsContext";
+import { usePlayers } from "../context/PlayerContext";
+import { useQuests } from "../context/QuestContext";
+
+// Komponenten
 import Player from "../components/Player";
-import Enemy from "../components/Enemy";
-import enemiesData from "../data/enemies.json";
-import backgrounds from "../data/battleBackgrounds.json";
 import HPBar from "../components/HPBar";
 import XPBar from "../components/XPBar";
 import Header from "../components/Header";
-import { useCoins } from "../context/CoinsContext";
-import { useCrystals } from "../context/CrystalsContext";
 import BattleBackground from "../components/BattleBackground";
 import StageProgress from "../components/StageProgress";
 import AutoPlay from "../components/AutoPlay";
-import { usePlayers } from "../context/PlayerContext";
-import { useQuests } from "../context/QuestContext";
+import EnemyFactory from "../enemies/EnemyFactory";
 
 const { width, height } = Dimensions.get("window");
 const CENTER_X = width / 2;
 const ENEMY_Y = height * 0.45;
 const PLAYER_Y = height - 120;
 
-const DEFAULT_REWARDS = { gold: 5, crystals: 1, xp: 10 };
 const TOTAL_STAGES = 10;
+const AUTO_PLAY_INTERVAL = 800;
 
 export default function BattleScreen() {
   const { selectedPlayer } = useSelectedPlayer();
+  const { players, addXp, resetPlayer } = usePlayers();
+
+  // ✅ Hooks hier oben
   const { addCoins } = useCoins();
   const { addCrystals } = useCrystals();
-  const { players, addXp, resetPlayer } = usePlayers();
   const { incrementKill, incrementWin, addCrystalsFromBattle } = useQuests();
 
-  // 🎯 Aktueller Spieler
-  const activePlayer = players.find((p) => p.id === selectedPlayer?.id);
+  // 🎯 BattleContext
+  const {
+    stage,
+    autoPlay,
+    setAutoPlay,
+    enemy,
+    enemyHp,
+    backgroundId,
+    respawning,
+    spawnEnemy,
+    handleAttack,
+  } = useBattle();
 
-  const MAX_PLAYER_HP = activePlayer?.hp?.max ?? 100;
+  // 🎯 Aktiver Spieler
+  const activePlayer = useMemo(
+    () => players.find((p) => p.id === selectedPlayer?.id),
+    [players, selectedPlayer]
+  );
+
   const PLAYER_DAMAGE = activePlayer?.damage ?? 5;
 
-  const [stage, setStage] = useState(1);
-  const [autoPlay, setAutoPlay] = useState(false);
-  const [playerHp, setPlayerHp] = useState(MAX_PLAYER_HP);
-  const [enemy, setEnemy] = useState(null);
-  const [enemyHp, setEnemyHp] = useState(0);
-  const [backgroundId, setBackgroundId] = useState(backgrounds[0].id);
+  // ⚡ Rewards bündeln
+  const battleRewards = useMemo(
+    () => ({
+      addCoins,
+      addCrystals,
+      addXp,
+      incrementKill,
+      incrementWin,
+      addCrystalsFromBattle,
+    }),
+    [
+      addCoins,
+      addCrystals,
+      addXp,
+      incrementKill,
+      incrementWin,
+      addCrystalsFromBattle,
+    ]
+  );
 
-  // 🔹 Gegner + Hintergrund wählen
-  const spawnEnemy = useCallback(() => {
-    if (!enemiesData.length) return;
-    const newEnemy =
-      enemiesData[Math.floor(Math.random() * enemiesData.length)];
-    const nextBg = backgrounds[Math.floor(Math.random() * backgrounds.length)];
+  // 🆕 Spielerwechsel → Gegner spawnen
+  useEffect(() => {
+    if (activePlayer) spawnEnemy();
+  }, [activePlayer, spawnEnemy]);
 
-    setEnemy(newEnemy);
-    setEnemyHp(newEnemy.hp);
-    setBackgroundId(nextBg.id);
-  }, []);
-
-  // 🔹 Wenn Gegner besiegt wird → alles zentral hier
-  const onEnemyDefeated = useCallback(() => {
-    if (!enemy || !activePlayer) return;
-
-    // Rewards
-    addCoins(enemy.goldReward ?? DEFAULT_REWARDS.gold);
-    addCrystals(enemy.crystalReward ?? DEFAULT_REWARDS.crystals);
-    addXp(activePlayer.id, enemy.xpReward ?? DEFAULT_REWARDS.xp);
-
-    // Quests
-    incrementKill(enemy.id);
-    incrementWin();
-    addCrystalsFromBattle(enemy.crystalReward ?? 0);
-
-    // 🔹 Einheitliche Rewards berechnen
-    const goldEarned = enemy.goldReward ?? DEFAULT_REWARDS.gold;
-    const crystalsEarned = enemy.crystalReward ?? DEFAULT_REWARDS.crystals;
-    const xpEarned = enemy.xpReward ?? DEFAULT_REWARDS.xp;
-
-    // Rewards an Spieler
-    addCoins(goldEarned);
-    addCrystals(crystalsEarned);
-    addXp(activePlayer.id, xpEarned);
-
-    // Quests updaten
-    incrementKill(enemy.id);
-    incrementWin();
-    if (crystalsEarned > 0) {
-      addCrystalsFromBattle(crystalsEarned);
-    }
-
-    // Stage & Reset
-    setPlayerHp(MAX_PLAYER_HP);
-    setStage((prev) => (prev < TOTAL_STAGES ? prev + 1 : 1));
-    spawnEnemy();
+  // ⚔️ Angriff
+  const handleStageTap = useCallback(() => {
+    if (!enemy || enemyHp <= 0 || !activePlayer || respawning) return;
+    handleAttack(PLAYER_DAMAGE, activePlayer, battleRewards);
   }, [
     enemy,
+    enemyHp,
     activePlayer,
-    addCoins,
-    addCrystals,
-    addXp,
-    incrementKill,
-    incrementWin,
-    addCrystalsFromBattle,
-    MAX_PLAYER_HP,
-    spawnEnemy,
+    respawning,
+    PLAYER_DAMAGE,
+    handleAttack,
+    battleRewards,
   ]);
 
-  // 🔹 Trigger, wenn Gegner HP = 0
-  useEffect(() => {
-    if (enemy && enemyHp <= 0) {
-      onEnemyDefeated();
-    }
-  }, [enemyHp, enemy, onEnemyDefeated]);
-
-  // 🔹 Spieler lädt → ersten Gegner spawnen
-  useEffect(() => {
-    if (selectedPlayer) spawnEnemy();
-  }, [selectedPlayer, spawnEnemy]);
-
-  // 🔹 Kampf-Logik
-  const handleStageTap = useCallback(() => {
-    if (!enemy || enemyHp <= 0 || playerHp <= 0) return;
-
-    setEnemyHp((prevHp) => Math.max(prevHp - PLAYER_DAMAGE, 0));
-    setPlayerHp((prev) => Math.max(prev - (enemy?.damage ?? 1), 0));
-  }, [enemy, enemyHp, playerHp, PLAYER_DAMAGE]);
-
-  // 🔹 Kein Spieler ausgewählt
-  if (!selectedPlayer || !activePlayer) {
+  // ❌ Kein Spieler gewählt
+  if (!activePlayer) {
     return (
       <View style={styles.center}>
         <Text style={styles.noPlayer}>❌ Kein Spieler ausgewählt!</Text>
@@ -141,59 +113,85 @@ export default function BattleScreen() {
     );
   }
 
+  // Autoplay aktiv?
+  const autoPlayActive = enemy && autoPlay && enemyHp > 0 && !respawning;
+
+  // ✨ Animiertes Respawn-Overlay
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    if (respawning) {
+      fadeAnim.setValue(0);
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [respawning, fadeAnim]);
+
   return (
     <View
       style={styles.container}
       onStartShouldSetResponder={() => true}
       onResponderRelease={handleStageTap}
     >
-      {/* HUD */}
+      {/* 🧭 HUD */}
       <Header />
       <StageProgress current={stage} total={TOTAL_STAGES} />
 
-      {/* AutoPlay Button */}
+      {/* ⚡ AutoPlay Toggle */}
       <TouchableOpacity
         style={[
           styles.autoPlayBtn,
           { backgroundColor: autoPlay ? "#2ecc71" : "#e74c3c" },
         ]}
         onPress={() => setAutoPlay((prev) => !prev)}
+        disabled={!enemy || enemyHp <= 0}
       >
         <Text style={styles.autoPlayText}>
           {autoPlay ? "Auto: ON" : "Auto: OFF"}
         </Text>
       </TouchableOpacity>
 
-      {/* AutoPlay */}
+      {/* 🤖 AutoPlay Engine */}
       <AutoPlay
-        enabled={autoPlay && enemyHp > 0}
-        interval={800}
+        enabled={autoPlayActive}
+        interval={AUTO_PLAY_INTERVAL}
         onAttack={handleStageTap}
       />
 
-      {/* Hintergrund */}
+      {/* 🌄 Hintergrund */}
       <BattleBackground
         width={width}
         height={height}
         backgroundId={backgroundId}
       />
 
-      {/* Gegner */}
-      {enemy && (
+      {/* 👾 Gegner */}
+      {enemy && !respawning && (
         <View style={styles.enemyWrap}>
-          <Enemy
+          <EnemyFactory
+            enemy={enemy}
             size={Math.min(260, Math.max(180, width * 0.6))}
-            {...enemy.sprite}
           />
           <HPBar current={enemyHp} max={enemy.hp} width={200} height={20} />
         </View>
       )}
 
-      {/* Boden */}
+      {/* ⚔️ Respawn Overlay mit Fade */}
+      {respawning && (
+        <Animated.View style={[styles.respawnOverlay, { opacity: fadeAnim }]}>
+          <Text style={styles.respawnText}>
+            ⚔️ Gegner besiegt! Neuer Gegner erscheint …
+          </Text>
+        </Animated.View>
+      )}
+
+      {/* 🪨 Boden */}
       <View style={styles.groundShadow} />
       <View style={styles.ground} />
 
-      {/* Spieler */}
+      {/* 🧑 Spieler */}
       <View style={styles.playerWrap}>
         <XPBar
           xp={activePlayer.xp}
@@ -209,14 +207,18 @@ export default function BattleScreen() {
         />
       </View>
 
-      {/* DEBUG XP / Reset */}
+      {/* 🛠 Debug Overlay */}
       {__DEV__ && (
         <View style={styles.debugBox}>
-          <Text style={styles.debugText}>
-            {activePlayer.name} (Lvl {activePlayer.level}) — {activePlayer.xp}/
-            {activePlayer.xpToNextLevel}
-          </Text>
-          <View style={{ flexDirection: "row", gap: 8 }}>
+          <DebugText>
+            🧑 {activePlayer.name} (Lvl {activePlayer.level}) —{" "}
+            {activePlayer.xp}/{activePlayer.xpToNextLevel}
+          </DebugText>
+          <DebugText>
+            👾 {enemy?.name ?? "?"} HP: {enemyHp}/{enemy?.hp ?? 0}
+          </DebugText>
+          <DebugText>🎯 Stage: {stage}</DebugText>
+          <View style={styles.debugButtons}>
             <Button title="+50 XP" onPress={() => addXp(activePlayer.id, 50)} />
             <Button
               title="Reset"
@@ -227,6 +229,11 @@ export default function BattleScreen() {
       )}
     </View>
   );
+}
+
+// kleine Helper-Komponente für DebugText
+function DebugText({ children }) {
+  return <Text style={styles.debugText}>{children}</Text>;
 }
 
 const styles = StyleSheet.create({
@@ -284,15 +291,29 @@ const styles = StyleSheet.create({
   },
   autoPlayText: { color: "#fff", fontWeight: "700", fontSize: 14 },
 
+  respawnOverlay: {
+    position: "absolute",
+    top: ENEMY_Y - 40,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+    zIndex: 5,
+    padding: 10,
+    backgroundColor: "#00000088",
+    borderRadius: 8,
+  },
+  respawnText: { color: "#ffcc00", fontSize: 16, fontWeight: "700" },
+
   debugBox: {
     position: "absolute",
     top: 120,
     left: 10,
     right: 10,
-    backgroundColor: "#00000077",
+    backgroundColor: "#00000088",
     padding: 10,
     borderRadius: 8,
     zIndex: 99,
   },
-  debugText: { color: "#fff", fontSize: 12 },
+  debugText: { color: "#fff", fontSize: 12, marginVertical: 2 },
+  debugButtons: { flexDirection: "row", gap: 8, marginTop: 6 },
 });

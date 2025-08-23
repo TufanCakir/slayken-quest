@@ -1,21 +1,35 @@
-// src/components/StageProgress.jsx
+import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 
-function StageProgress({ current, total }) {
+function StageProgress({
+  current,
+  total,
+  showLabel = true,
+  activeColor = "#ffd700",
+  inactiveColor = "#555",
+  size = 12,
+}) {
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>
-        Stage {current} / {total}
-      </Text>
-      <View style={styles.iconsRow}>
-        {Array.from({ length: total }).map((_, i) => {
+      {showLabel && (
+        <Text style={styles.label}>
+          Stage {current} / {total}
+        </Text>
+      )}
+      <View style={styles.dotsRow}>
+        {new Array(total).fill(null).map((_, i) => {
           const isActive = i < current;
           return (
             <View
               key={i}
               style={[
-                styles.icon,
-                { backgroundColor: isActive ? "#ffd700" : "#555" },
+                styles.dot,
+                {
+                  width: size,
+                  height: size,
+                  borderRadius: size / 2,
+                  backgroundColor: isActive ? activeColor : inactiveColor,
+                },
               ]}
             />
           );
@@ -25,8 +39,6 @@ function StageProgress({ current, total }) {
   );
 }
 
-// Performance: Memoize StageProgress
-import React from "react";
 export default React.memo(StageProgress);
 
 const styles = StyleSheet.create({
@@ -38,15 +50,14 @@ const styles = StyleSheet.create({
   label: {
     color: "#fff",
     fontSize: 14,
+    fontWeight: "600",
     marginBottom: 4,
   },
-  iconsRow: {
+  dotsRow: {
     flexDirection: "row",
     gap: 6,
   },
-  icon: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+  dot: {
+    // Größe und Farbe kommen dynamisch
   },
 });

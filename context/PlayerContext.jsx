@@ -8,13 +8,12 @@ import React, {
 } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { gainXp } from "../utils/levelSystem";
-import initialPlayers from "../data/players.json";
 
 const STORAGE_KEY = "@players"; // 🔑 Einheitlicher Key
 const PlayerContext = createContext(null);
 
 export function PlayerProvider({ children }) {
-  const [players, setPlayers] = useState(initialPlayers);
+  const [players, setPlayers] = useState([]); // 🚀 Keine Default-Chars mehr
 
   // === Laden beim Start ===
   useEffect(() => {
@@ -24,10 +23,11 @@ export function PlayerProvider({ children }) {
         if (saved) {
           setPlayers(JSON.parse(saved));
         } else {
-          setPlayers(initialPlayers);
+          setPlayers([]); // Start = leer
         }
       } catch (err) {
         console.error("❌ Fehler beim Laden der Spieler:", err);
+        setPlayers([]);
       }
     })();
   }, []);

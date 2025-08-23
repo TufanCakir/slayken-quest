@@ -1,5 +1,137 @@
 [
   {
+    "id": "enemy_001",
+    "name": "Goblin Raider",
+    "element": "earth",
+    "hp": 50,
+    "attack": 5,
+    "sprite": {
+      "skin": "#8BC34A",
+      "armorColor": "#33691E",
+      "helmetColor": "#558B2F"
+    }
+  },
+  {
+    "id": "enemy_002",
+    "name": "Skeleton Warrior",
+    "element": "night",
+    "hp": 80,
+    "attack": 8,
+    "sprite": {
+      "skin": "#E0E0E0",
+      "armorColor": "#424242",
+      "helmetColor": "#9E9E9E"
+    }
+  },
+  {
+    "id": "enemy_003",
+    "name": "Dark Mage",
+    "element": "night",
+    "hp": 60,
+    "attack": 10,
+    "sprite": {
+      "skin": "#B39DDB",
+      "armorColor": "#512DA8",
+      "helmetColor": "#311B92"
+    }
+  },
+  {
+    "id": "enemy_fire_001",
+    "name": "Flame Imp",
+    "element": "fire",
+    "hp": 55,
+    "attack": 9,
+    "sprite": {
+      "skin": "#FF7043",
+      "armorColor": "#BF360C",
+      "helmetColor": "#E64A19"
+    }
+  },
+  {
+    "id": "enemy_fire_002",
+    "name": "Lava Golem",
+    "element": "fire",
+    "hp": 120,
+    "attack": 15,
+    "sprite": {
+      "skin": "#FF8A65",
+      "armorColor": "#4E342E",
+      "helmetColor": "#D84315"
+    }
+  },
+  {
+    "id": "enemy_ice_001",
+    "name": "Frost Wolf",
+    "element": "ice",
+    "hp": 70,
+    "attack": 7,
+    "sprite": {
+      "skin": "#B3E5FC",
+      "armorColor": "#01579B",
+      "helmetColor": "#0288D1"
+    }
+  },
+  {
+    "id": "enemy_ice_002",
+    "name": "Ice Elemental",
+    "element": "ice",
+    "hp": 100,
+    "attack": 12,
+    "sprite": {
+      "skin": "#81D4FA",
+      "armorColor": "#0277BD",
+      "helmetColor": "#039BE5"
+    }
+  },
+  {
+    "id": "enemy_wind_001",
+    "name": "Storm Harpy",
+    "element": "sky_heaven",
+    "hp": 65,
+    "attack": 9,
+    "sprite": {
+      "skin": "#AED581",
+      "armorColor": "#33691E",
+      "helmetColor": "#689F38"
+    }
+  },
+  {
+    "id": "enemy_wind_002",
+    "name": "Sky Serpent",
+    "element": "sky_heaven",
+    "hp": 90,
+    "attack": 14,
+    "sprite": {
+      "skin": "#C5E1A5",
+      "armorColor": "#558B2F",
+      "helmetColor": "#8BC34A"
+    }
+  },
+  {
+    "id": "enemy_earth_001",
+    "name": "Stone Guardian",
+    "element": "earth",
+    "hp": 110,
+    "attack": 13,
+    "sprite": {
+      "skin": "#A1887F",
+      "armorColor": "#4E342E",
+      "helmetColor": "#6D4C41"
+    }
+  },
+  {
+    "id": "enemy_earth_002",
+    "name": "Cave Troll",
+    "element": "earth",
+    "hp": 95,
+    "attack": 11,
+    "sprite": {
+      "skin": "#8D6E63",
+      "armorColor": "#3E2723",
+      "helmetColor": "#5D4037"
+    }
+  },
+  {
     "id": "slime",
     "name": "Green Slime",
     "element": "earth",
@@ -9,6 +141,126 @@
       "skin": "#AEEA00",
       "armorColor": "#689F38",
       "helmetColor": "#33691E"
+    }
+  },
+  {
+    "id": "enemy_vampire_001",
+    "name": "Vampire Thrall",
+    "element": "blood_castle",
+    "hp": 85,
+    "attack": 12,
+    "sprite": {
+      "skin": "#D7CCC8",
+      "armorColor": "#4E342E",
+      "helmetColor": "#6D4C41"
+    }
+  },
+  {
+    "id": "enemy_vampire_002",
+    "name": "Vampire Lord",
+    "element": "blood_castle",
+    "hp": 150,
+    "attack": 20,
+    "sprite": {
+      "skin": "#BDBDBD",
+      "armorColor": "#212121",
+      "helmetColor": "#424242"
+    }
+  },
+  {
+    "id": "enemy_werewolf_001",
+    "name": "Feral Werewolf",
+    "element": "full_moon_forest",
+    "hp": 100,
+    "attack": 14,
+    "sprite": {
+      "skin": "#8D6E63",
+      "armorColor": "#5D4037",
+      "helmetColor": "#3E2723"
+    }
+  },
+  {
+    "id": "enemy_werewolf_002",
+    "name": "Alpha Werewolf",
+    "element": "full_moon_forest",
+    "hp": 160,
+    "attack": 22,
+    "sprite": {
+      "skin": "#6D4C41",
+      "armorColor": "#4E342E",
+      "helmetColor": "#212121"
+    }
+  },
+  {
+    "id": "enemy_mage_001",
+    "name": "Apprentice Mage",
+    "element": "arcane_tower",
+    "hp": 60,
+    "attack": 11,
+    "sprite": {
+      "skin": "#E1BEE7",
+      "armorColor": "#7B1FA2",
+      "helmetColor": "#4A148C"
+    }
+  },
+  {
+    "id": "enemy_mage_002",
+    "name": "Archmage",
+    "element": "arcane_tower",
+    "hp": 140,
+    "attack": 25,
+    "sprite": {
+      "skin": "#CE93D8",
+      "armorColor": "#512DA8",
+      "helmetColor": "#311B92"
+    }
+  },
+  {
+    "id": "enemy_skeleton_mage",
+    "name": "Skeleton Mage",
+    "element": "dark_temple",
+    "hp": 75,
+    "attack": 13,
+    "sprite": {
+      "skin": "#EEEEEE",
+      "armorColor": "#616161",
+      "helmetColor": "#9E9E9E"
+    }
+  },
+  {
+    "id": "enemy_elite_knight",
+    "name": "Elite Black Knight",
+    "element": "dark_temple",
+    "hp": 180,
+    "attack": 24,
+    "sprite": {
+      "skin": "#B0BEC5",
+      "armorColor": "#212121",
+      "helmetColor": "#263238"
+    }
+  },
+  {
+    "id": "enemy_demon_001",
+    "name": "Lesser Demon",
+    "element": "hell_gate",
+    "hp": 130,
+    "attack": 18,
+    "sprite": {
+      "skin": "#FF7043",
+      "armorColor": "#D84315",
+      "helmetColor": "#BF360C"
+    }
+  },
+  {
+    "id": "enemy_demon_002",
+    "name": "Demon Overlord",
+    "element": "hell_gate",
+    "hp": 220,
+    "attack": 28,
+    "sprite": {
+      "skin": "#FF5252",
+      "armorColor": "#B71C1C",
+      "helmetColor": "#880E4F"
     }
   }
 ]

@@ -1,7 +1,9 @@
+// src/navigation/RootNavigator.jsx
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 // Screens
+import MainScreenWrapper from "../screens/MainScreenWrapper"; // ✅ Wichtig: importiert
 import HomeScreen from "../screens/HomeScreen";
 import CharacterSelectionScreen from "../screens/CharacterSelectionScreen";
 import BattleScreen from "../screens/BattleScreen";
@@ -14,13 +16,16 @@ const Stack = createNativeStackNavigator();
 export default function RootNavigator() {
   return (
     <Stack.Navigator
-      initialRouteName="Home"
       screenOptions={{
         headerShown: false,
-        animationEnabled: true, // sanftere Navigation
+        animation: "fade", // sanftere Navigation (statt deprecated animationEnabled)
       }}
     >
-      <Stack.Screen name="Home" component={HomeScreen} />
+      {/* Wrapper entscheidet ob Tutorial oder Home zuerst */}
+      <Stack.Screen name="MainScreenWrapper" component={MainScreenWrapper} />
+
+      {/* Standard Screens */}
+      <Stack.Screen name="HomeScreen" component={HomeScreen} />
       <Stack.Screen
         name="CharacterSelectionScreen"
         component={CharacterSelectionScreen}

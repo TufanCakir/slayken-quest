@@ -10,7 +10,6 @@ import {
 } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import Player from "../components/Player";
-import playersData from "../data/players.json";
 import { usePlayers } from "../context/PlayerContext";
 import { useSelectedPlayer } from "../context/SelectedPlayerContext";
 
@@ -36,7 +35,19 @@ const CLASS_COLORS = {
   Ranger: rangerColors,
 };
 
-// 🔑 Utils
+// 🎭 Verfügbare Klassen (manuell festgelegt → keine Default-Chars)
+const ALL_CLASSES = [
+  "Berserker",
+  "DemonHunter",
+  "DeathKnight",
+  "Paladin",
+  "Assassin",
+  "Mage",
+  "Necromancer",
+  "Ranger",
+];
+
+// Utils
 const randomOf = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const uniq = (arr) => [...new Set(arr)].filter(Boolean);
 
@@ -53,7 +64,7 @@ const RANDOM_NAMES = [
   "Morrik",
 ];
 
-// 🎨 Farb-Swatch
+// 🟩 Farb-Swatch
 const ColorSwatch = React.memo(({ color, selected, onPress }) => {
   const [bg, border] = Array.isArray(color)
     ? [color[0], color[color.length - 1]]
@@ -71,7 +82,7 @@ const ColorSwatch = React.memo(({ color, selected, onPress }) => {
   );
 });
 
-// 🎨 Farb-Section mit Accordion
+// 🎨 Farb-Section (Accordion)
 const ColorSection = React.memo(({ label, colors, selected, onSelect }) => {
   const [open, setOpen] = useState(false);
 
@@ -79,8 +90,6 @@ const ColorSection = React.memo(({ label, colors, selected, onSelect }) => {
   const itemSize = 42;
   const rows = Math.ceil(colors.length / numColumns);
   const gridHeight = Math.min(rows * itemSize, 240);
-
-  const keyExtractor = useCallback((_, idx) => `${label}-${idx}`, [label]);
 
   const renderItem = useCallback(
     ({ item }) => (
@@ -107,7 +116,7 @@ const ColorSection = React.memo(({ label, colors, selected, onSelect }) => {
         <View style={{ height: gridHeight }}>
           <FlashList
             data={colors}
-            keyExtractor={keyExtractor}
+            keyExtractor={(item, idx) => `${label}-${idx}`}
             renderItem={renderItem}
             estimatedItemSize={itemSize}
             numColumns={numColumns}
@@ -136,12 +145,10 @@ export default function CreateCharacterScreen({ navigation }) {
   const { players, addPlayer } = usePlayers();
   const { setSelectedPlayer } = useSelectedPlayer();
 
-  const allClasses = useMemo(() => uniq(playersData.map((p) => p.class)), []);
-
   const [name, setName] = useState("");
-  const [selectedClass, setSelectedClass] = useState(allClasses[0]);
+  const [selectedClass, setSelectedClass] = useState(ALL_CLASSES[0]);
 
-  // Defaults für Sprite
+  // Defaults
   const buildSpriteDefaults = useCallback((cls) => {
     const base = CLASS_COLORS[cls] || {};
     return Object.fromEntries(
@@ -153,17 +160,14 @@ export default function CreateCharacterScreen({ navigation }) {
     buildSpriteDefaults(selectedClass)
   );
 
-  const handleClassChange = useCallback(
-    (cls) => {
-      setSelectedClass(cls);
-      setSprite(buildSpriteDefaults(cls));
-    },
-    [buildSpriteDefaults]
-  );
+  const handleClassChange = (cls) => {
+    setSelectedClass(cls);
+    setSprite(buildSpriteDefaults(cls));
+  };
 
-  // 🎲 Zufalls-Generator
-  const handleRandomize = useCallback(() => {
-    const cls = randomOf(allClasses);
+  // Zufallsbutton
+  const handleRandomize = () => {
+    const cls = randomOf(ALL_CLASSES);
     const base = CLASS_COLORS[cls] || {};
     const randomSprite = Object.fromEntries(
       Object.entries(base).map(([k, v]) => [
@@ -175,9 +179,9 @@ export default function CreateCharacterScreen({ navigation }) {
     setSelectedClass(cls);
     setSprite(randomSprite);
     setName(randomOf(RANDOM_NAMES));
-  }, [allClasses]);
+  };
 
-  // Farben
+  // Farben je Klasse
   const availableColors = useMemo(() => {
     const base = CLASS_COLORS[selectedClass] || {};
     return Object.fromEntries(
@@ -185,13 +189,11 @@ export default function CreateCharacterScreen({ navigation }) {
     );
   }, [selectedClass]);
 
-  const updateSprite = useCallback(
-    (k, v) => setSprite((prev) => (prev[k] === v ? prev : { ...prev, [k]: v })),
-    []
-  );
+  const updateSprite = (k, v) =>
+    setSprite((prev) => (prev[k] === v ? prev : { ...prev, [k]: v }));
 
-  // ✅ Speichern
-  const handleSave = useCallback(async () => {
+  // Speichern
+  const handleSave = async () => {
     const trimmed = name.trim();
     if (trimmed.length < 2) {
       Alert.alert("❌ Fehler", "Name muss mindestens 2 Zeichen haben.");
@@ -217,7 +219,7 @@ export default function CreateCharacterScreen({ navigation }) {
       };
 
       await addPlayer(newPlayer);
-      await setSelectedPlayer(newPlayer); // Direkt aktiv setzen
+      await setSelectedPlayer(newPlayer);
 
       Alert.alert("✅ Erfolg", `${trimmed} wurde erstellt!`);
       navigation.goBack();
@@ -228,28 +230,7 @@ export default function CreateCharacterScreen({ navigation }) {
         "Der Charakter konnte nicht gespeichert werden."
       );
     }
-  }, [
-    addPlayer,
-    setSelectedPlayer,
-    name,
-    players,
-    selectedClass,
-    sprite,
-    navigation,
-  ]);
-
-  // ===== UI =====
-  const classKeyExtractor = useCallback((item) => `cls-${item}`, []);
-  const renderClassItem = useCallback(
-    ({ item }) => (
-      <ClassButton
-        cls={item}
-        active={selectedClass === item}
-        onPress={() => handleClassChange(item)}
-      />
-    ),
-    [handleClassChange, selectedClass]
-  );
+  };
 
   return (
     <FlashList
@@ -313,9 +294,15 @@ export default function CreateCharacterScreen({ navigation }) {
               <View>
                 <Text style={styles.label}>Klasse:</Text>
                 <FlashList
-                  data={allClasses}
-                  keyExtractor={classKeyExtractor}
-                  renderItem={renderClassItem}
+                  data={ALL_CLASSES}
+                  keyExtractor={(item) => `cls-${item}`}
+                  renderItem={({ item }) => (
+                    <ClassButton
+                      cls={item}
+                      active={selectedClass === item}
+                      onPress={() => handleClassChange(item)}
+                    />
+                  )}
                   estimatedItemSize={44}
                   horizontal
                   showsHorizontalScrollIndicator={false}
@@ -348,9 +335,7 @@ export default function CreateCharacterScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0f1220" },
   listContent: { padding: 20, paddingBottom: 40, backgroundColor: "#0f1220" },
-
   preview: { alignItems: "center", marginVertical: 20 },
   title: {
     color: "#fff",
@@ -360,8 +345,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   label: { color: "#fff", marginTop: 16, marginBottom: 6, fontSize: 16 },
-
-  // Accordion
   section: { marginTop: 12 },
   sectionHeader: {
     flexDirection: "row",
@@ -376,7 +359,6 @@ const styles = StyleSheet.create({
   },
   sectionTitle: { color: "#fff", fontSize: 16, fontWeight: "600" },
   sectionToggle: { color: "#aaa", fontSize: 14 },
-
   input: {
     backgroundColor: "#1a1d2e",
     color: "#fff",
@@ -386,7 +368,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#272b45",
   },
-
   classList: { paddingVertical: 4 },
   classBtn: {
     backgroundColor: "#1a1d2e",
@@ -400,7 +381,6 @@ const styles = StyleSheet.create({
   classBtnActive: { backgroundColor: "#FFD700", borderColor: "#FFD700" },
   classBtnText: { color: "#fff", fontWeight: "600" },
   classBtnTextActive: { color: "#222" },
-
   colorGrid: { paddingTop: 8 },
   colorBox: {
     width: 32,
@@ -416,7 +396,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.9,
     shadowRadius: 6,
   },
-
   saveBtn: {
     backgroundColor: "#4CAF50",
     paddingVertical: 12,
@@ -429,7 +408,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "800",
   },
-
   randomBtn: {
     backgroundColor: "#2196F3",
     paddingVertical: 12,

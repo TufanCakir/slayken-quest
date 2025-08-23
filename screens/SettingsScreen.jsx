@@ -1,115 +1,83 @@
 // src/screens/SettingsScreen.jsx
-import React, { useCallback } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  ScrollView,
-} from "react-native";
+import React from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-// Alle deine Kontexte importieren
-import { usePlayers } from "../context/PlayerContext";
-import { useCoins } from "../context/CoinsContext";
-import { useCrystals } from "../context/CrystalsContext";
-import { useAccountLevel } from "../context/AccountLevelContext";
-// ggf. weitere: Missions, Settings, etc.
+import * as Updates from "expo-updates"; // ⬅️ wichtig für reload()
 
 export default function SettingsScreen() {
-  const { clearPlayers } = usePlayers();
-  const { resetCoins } = useCoins();
-  const { resetCrystals } = useCrystals();
-  const { resetAccount } = useAccountLevel();
-
-  // ✅ Globaler Reset
-  const handleClearAccount = useCallback(() => {
-    Alert.alert(
-      "⚠️ Account zurücksetzen?",
-      "Das wird ALLES löschen: Charaktere, Fortschritt, Level, Währung und Inventar!",
-      [
-        { text: "Abbrechen", style: "cancel" },
-        {
-          text: "Ja, löschen",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              // Zuerst alle Contexts zurücksetzen
-              clearPlayers();
-              resetCoins();
-              resetCrystals();
-              resetAccount();
-              // ggf. weitere Context-Resets
-
-              // Dann kompletten AsyncStorage leeren
-              await AsyncStorage.clear();
-
-              Alert.alert(
-                "✅ Erfolgreich",
-                "Dein Account wurde vollständig gelöscht!"
-              );
-            } catch (err) {
-              console.error("Fehler beim Reset:", err);
-              Alert.alert(
-                "❌ Fehler",
-                "Der Account konnte nicht vollständig gelöscht werden. Bitte versuche es erneut."
-              );
-            }
+  // 🔹 Alles löschen + Reload
+  const handleClearStorage = async () => {
+    try {
+      await AsyncStorage.clear();
+      Alert.alert(
+        "✅ Erfolgreich",
+        "Alle gespeicherten Daten wurden gelöscht.",
+        [
+          {
+            text: "OK",
+            onPress: async () => {
+              try {
+                // App reloaden (Context/States neu initialisieren)
+                await Updates.reloadAsync();
+              } catch (reloadErr) {
+                console.warn("Fehler beim Reload:", reloadErr);
+              }
+            },
           },
-        },
-      ]
-    );
-  }, []);
+        ]
+      );
+    } catch (err) {
+      console.warn("Fehler beim Löschen von AsyncStorage:", err);
+      Alert.alert("⚠️ Fehler", "Die Daten konnten nicht gelöscht werden.");
+    }
+  };
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
+    <View style={styles.container}>
       <Text style={styles.title}>⚙️ Einstellungen</Text>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Account</Text>
-        <TouchableOpacity style={styles.clearBtn} onPress={handleClearAccount}>
-          <Text style={styles.clearText}>🗑️ Gesamten Account löschen</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+      <TouchableOpacity style={styles.button} onPress={handleClearStorage}>
+        <Text style={styles.buttonText}>🗑 Alles zurücksetzen</Text>
+      </TouchableOpacity>
+
+      <Text style={styles.info}>
+        Drücke den Button, um alle gespeicherten Daten (Spielstände, Coins,
+        Quests, Einstellungen) zu löschen. Danach wird die App neu geladen.
+      </Text>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0f1220" },
-  content: { padding: 20, paddingBottom: 40 },
-
+  container: {
+    flex: 1,
+    backgroundColor: "#111",
+    padding: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   title: {
-    color: "#fff",
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "700",
-    marginBottom: 20,
-    textAlign: "center",
+    color: "#fff",
+    marginBottom: 30,
   },
-
-  section: { marginBottom: 30 },
-  sectionTitle: {
-    color: "#bbb",
-    fontSize: 14,
-    marginBottom: 10,
-    fontWeight: "600",
-    textTransform: "uppercase",
-  },
-
-  clearBtn: {
-    backgroundColor: "#B71C1C",
+  button: {
+    backgroundColor: "#e74c3c",
     paddingVertical: 14,
+    paddingHorizontal: 24,
     borderRadius: 10,
+    marginBottom: 20,
   },
-  clearText: {
+  buttonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "700",
+  },
+  info: {
+    color: "#aaa",
+    fontSize: 14,
     textAlign: "center",
+    marginTop: 10,
   },
 });

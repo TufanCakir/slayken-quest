@@ -94,5 +94,77 @@
       "end": "#222222"
     },
     "gridColor": "#cccccc"
+  },
+  {
+    "id": "blood_castle",
+    "skyGradient": {
+      "start": "#2b0000",
+      "end": "#550000"
+    },
+    "groundGradient": {
+      "start": "#330000",
+      "end": "#110000"
+    },
+    "gridColor": "#ff3333"
+  },
+  {
+    "id": "full_moon_forest",
+    "skyGradient": {
+      "start": "#0d1b2a",
+      "end": "#1b263b"
+    },
+    "groundGradient": {
+      "start": "#1a331a",
+      "end": "#0a1a0a"
+    },
+    "gridColor": "#99ccff"
+  },
+  {
+    "id": "arcane_tower",
+    "skyGradient": {
+      "start": "#330066",
+      "end": "#110033"
+    },
+    "groundGradient": {
+      "start": "#4a148c",
+      "end": "#12002b"
+    },
+    "gridColor": "#bb86fc"
+  },
+  {
+    "id": "dark_temple",
+    "skyGradient": {
+      "start": "#0d0d0d",
+      "end": "#1c1c1c"
+    },
+    "groundGradient": {
+      "start": "#2a2a2a",
+      "end": "#000000"
+    },
+    "gridColor": "#888888"
+  },
+  {
+    "id": "hell_gate",
+    "skyGradient": {
+      "start": "#660000",
+      "end": "#330000"
+    },
+    "groundGradient": {
+      "start": "#550000",
+      "end": "#220000"
+    },
+    "gridColor": "#ff2200"
+  },
+  {
+    "id": "sky_heaven",
+    "skyGradient": {
+      "start": "#cce7ff",
+      "end": "#66aaff"
+    },
+    "groundGradient": {
+      "start": "#e6f7ff",
+      "end": "#b3e0ff"
+    },
+    "gridColor": "#ffffff"
   }
 ]

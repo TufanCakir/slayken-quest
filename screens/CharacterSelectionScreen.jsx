@@ -7,7 +7,7 @@ import { useSelectedPlayer } from "../context/SelectedPlayerContext";
 import Player from "../components/Player";
 
 export default function CharacterSelectionScreen({ navigation }) {
-  const { players, setPlayers } = usePlayers();
+  const { players, setPlayers } = usePlayers(); // ✅ nur eigene Spieler aus AsyncStorage
   const { selectedPlayer, setSelectedPlayer } = useSelectedPlayer();
 
   // Spieler auswählen
@@ -15,7 +15,7 @@ export default function CharacterSelectionScreen({ navigation }) {
     async (player) => {
       await setSelectedPlayer(player);
       Alert.alert("✅ Ausgewählt", `${player.name} ist jetzt aktiv!`);
-      navigation.goBack(); // zurück, z. B. ins Hauptmenü
+      navigation.goBack();
     },
     [setSelectedPlayer, navigation]
   );
@@ -80,14 +80,17 @@ export default function CharacterSelectionScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Charakterauswahl</Text>
+
       <FlashList
-        data={players}
+        data={players} // ✅ NUR eigene Charaktere
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         estimatedItemSize={150}
         contentContainerStyle={styles.list}
         ListEmptyComponent={
-          <Text style={styles.empty}>⚠️ Noch keine Charaktere erstellt.</Text>
+          <Text style={styles.empty}>
+            ⚠️ Du hast noch keine Charaktere erstellt.
+          </Text>
         }
       />
 
